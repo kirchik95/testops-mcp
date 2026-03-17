@@ -86,31 +86,37 @@ export interface UpdateTestPlanRequest {
   status?: string;
 }
 
-// Launch
+// Launch (matches LaunchDto / LaunchPreviewDto from API)
+export type TestStatus = 'failed' | 'broken' | 'passed' | 'skipped' | 'unknown' | 'in_progress';
+
+export interface TestStatusCount {
+  status: TestStatus;
+  count: number;
+}
+
 export interface Launch {
   id: number;
   name: string;
-  projectId: number;
+  projectId?: number;
+  closed?: boolean;
+  external?: boolean;
+  autoclose?: boolean;
   createdDate?: number;
-  closedDate?: number;
-  status?: string;
-  statistic?: LaunchStatistic;
+  lastModifiedDate?: number;
+  createdBy?: string;
+  lastModifiedBy?: string;
+  tags?: Tag[];
+  issues?: Link[];
+  links?: Link[];
+  releaseId?: number;
+  statistic?: TestStatusCount[];
 }
 
-export interface LaunchStatistic {
-  total: number;
-  passed: number;
-  failed: number;
-  broken: number;
-  skipped: number;
-  unknown: number;
-}
-
-// Test Result
+// Test Result (matches TestResultDto from API)
 export interface TestResult {
   id: number;
   name: string;
-  status?: string; // passed, failed, broken, skipped, unknown — may be absent in manual launches
+  status?: TestStatus;
   launchId?: number;
   testCaseId?: number;
   projectId?: number;
@@ -118,6 +124,14 @@ export interface TestResult {
   message?: string;
   trace?: string;
   createdDate?: number;
+  lastModifiedDate?: number;
+  createdBy?: string;
+  lastModifiedBy?: string;
+  manual?: boolean;
+  assignee?: string;
+  flaky?: boolean;
+  muted?: boolean;
+  known?: boolean;
 }
 
 export interface UpdateTestResultRequest {
@@ -149,27 +163,31 @@ export interface UpdateDefectRequest {
   status?: string;
 }
 
-// Analytics
+// Analytics (matches real API DTOs)
 export interface AutomationTrendPoint {
-  date: number;
-  automated: number;
-  manual: number;
-  total: number;
+  date: string;
+  automatedCount: number;
+  manualCount: number;
+  sumDurationAutomated?: number;
+  sumDurationManual?: number;
 }
 
 export interface StatusDistribution {
-  status: string | { name?: string };
-  name?: string;
-  statusName?: string;
+  statusName: string;
+  statusId: number;
+  statusColor?: string;
   count: number;
 }
 
 export interface SuccessRatePoint {
-  date: number;
-  successRate?: number;
-  success_rate?: number;
-  total?: number;
-  passed?: number;
+  date: string;
+  avgSuccessRate: number;
+  testResultsCount: number;
+  testCasesCount: number;
+  avgDuration?: number;
+  sumDuration?: number;
+  retriedCount?: number;
+  notRetriedCount?: number;
 }
 
 // Shared

@@ -1,5 +1,5 @@
 import { HttpClient } from '../client/http-client.js';
-import { Launch, LaunchStatistic, TestResult } from '../types/api-types.js';
+import { Launch, TestStatusCount, TestResult } from '../types/api-types.js';
 import { PageResponse } from '../types/common.js';
 
 export class LaunchesApi {
@@ -13,11 +13,11 @@ export class LaunchesApi {
     return this.http.get<Launch>(`/api/launch/${id}`);
   }
 
-  async getStatistic(id: number): Promise<LaunchStatistic | null> {
+  async getStatistic(id: number): Promise<TestStatusCount[]> {
     try {
-      return await this.http.get<LaunchStatistic>(`/api/launch/${id}/statistic`);
+      return await this.http.get<TestStatusCount[]>(`/api/launch/${id}/statistic`);
     } catch {
-      return null;
+      return [];
     }
   }
 

@@ -31,8 +31,9 @@ export function registerLaunchTools(server: McpServer, api: LaunchesApi): void {
     { id: z.number().describe('Launch ID') },
     async (params) => {
       const result = await api.getById(params.id);
-      if (!result.statistic) {
-        result.statistic = await api.getStatistic(params.id) ?? undefined;
+      if (!result.statistic || result.statistic.length === 0) {
+        const stat = await api.getStatistic(params.id);
+        if (stat.length > 0) result.statistic = stat;
       }
       return { content: [{ type: 'text' as const, text: formatLaunch(result) }] };
     }

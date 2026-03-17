@@ -1,13 +1,34 @@
-import { Project, TestCase, TestPlan, Launch, TestResult, Defect, AutomationTrendPoint, StatusDistribution, SuccessRatePoint, TestCaseScenario, TestCaseStep } from '../types/api-types.js';
+import { Project, TestCase, TestPlan, Launch, TestResult, Defect, AutomationTrendPoint, StatusDistribution, SuccessRatePoint, TestCaseScenario, TestCaseStep, TestStatusCount } from '../types/api-types.js';
 import { PageResponse } from '../types/common.js';
 
-function formatDate(timestamp?: number): string {
-  if (!timestamp) return 'N/A';
-  return new Date(timestamp).toISOString().replace('T', ' ').substring(0, 19);
+function formatDate(dateOrTimestamp?: number | string): string {
+  if (dateOrTimestamp === undefined || dateOrTimestamp === null) return 'N/A';
+  const d = typeof dateOrTimestamp === 'string' ? new Date(dateOrTimestamp) : new Date(dateOrTimestamp);
+  if (isNaN(d.getTime())) return String(dateOrTimestamp);
+  return d.toISOString().replace('T', ' ').substring(0, 19);
 }
 
 function boolLabel(val?: boolean): string {
   return val === true ? 'Yes' : val === false ? 'No' : 'N/A';
+}
+
+function formatStatistic(statistic?: TestStatusCount[]): string {
+  if (!statistic || statistic.length === 0) return '';
+  const map: Record<string, number> = {};
+  let total = 0;
+  for (const s of statistic) {
+    map[s.status] = s.count;
+    total += s.count;
+  }
+  const parts = [
+    `P:${map['passed'] ?? 0}`,
+    `F:${map['failed'] ?? 0}`,
+    `B:${map['broken'] ?? 0}`,
+    `S:${map['skipped'] ?? 0}`,
+  ];
+  if (map['unknown']) parts.push(`U:${map['unknown']}`);
+  if (map['in_progress']) parts.push(`IP:${map['in_progress']}`);
+  return parts.join(' ');
 }
 
 export function formatProjects(data: PageResponse<Project>): string {
@@ -96,22 +117,23 @@ export function formatLaunches(data: PageResponse<Launch>): string {
   if (data.content.length === 0) return 'No launches found.';
   const lines = [`Found ${data.totalElements} launch(es) (page ${data.number + 1} of ${data.totalPages}):\n`];
   for (const l of data.content) {
-    const stat = l.statistic;
-    const statLine = stat ? ` | P:${stat.passed} F:${stat.failed} B:${stat.broken} S:${stat.skipped}` : '';
-    lines.push(`- [#${l.id}] ${l.name} | Status: ${l.status || 'N/A'}${statLine}`);
+    const stat = formatStatistic(l.statistic);
+    const closedLabel = l.closed ? 'Closed' : 'Open';
+    lines.push(`- [#${l.id}] ${l.name} | ${closedLabel}${stat ? ` | ${stat}` : ''}`);
   }
   return lines.join('\n');
 }
 
 export function formatLaunch(l: Launch): string {
-  const stat = l.statistic;
+  const stat = formatStatistic(l.statistic);
   return [
     `Launch #${l.id}: ${l.name}`,
-    `  Project: ${l.projectId}`,
-    `  Status: ${l.status || 'N/A'}`,
+    l.projectId ? `  Project: ${l.projectId}` : null,
+    `  State: ${l.closed ? 'Closed' : 'Open'}`,
     `  Created: ${formatDate(l.createdDate)}`,
-    l.closedDate ? `  Closed: ${formatDate(l.closedDate)}` : null,
-    stat ? `  Statistics: Total: ${stat.total} | Passed: ${stat.passed} | Failed: ${stat.failed} | Broken: ${stat.broken} | Skipped: ${stat.skipped} | Unknown: ${stat.unknown}` : null,
+    l.lastModifiedDate ? `  Modified: ${formatDate(l.lastModifiedDate)}` : null,
+    l.createdBy ? `  Created by: ${l.createdBy}` : null,
+    stat ? `  Statistics: ${stat}` : null,
   ].filter(Boolean).join('\n');
 }
 
@@ -131,6 +153,8 @@ export function formatTestResult(tr: TestResult): string {
     tr.testCaseId ? `  Test Case: #${tr.testCaseId}` : null,
     tr.launchId ? `  Launch: #${tr.launchId}` : null,
     tr.duration ? `  Duration: ${tr.duration}ms` : null,
+    tr.assignee ? `  Assignee: ${tr.assignee}` : null,
+    tr.manual !== undefined ? `  Manual: ${boolLabel(tr.manual)}` : null,
     tr.message ? `  Message: ${tr.message}` : null,
     tr.trace ? `  Trace: ${tr.trace.substring(0, 500)}${tr.trace.length > 500 ? '...' : ''}` : null,
     `  Created: ${formatDate(tr.createdDate)}`,
@@ -161,8 +185,9 @@ export function formatAutomationTrend(data: AutomationTrendPoint[]): string {
   if (data.length === 0) return 'No automation trend data.';
   const lines = ['Automation Trend:\n'];
   for (const p of data) {
-    const pct = p.total > 0 ? ((p.automated / p.total) * 100).toFixed(1) : '0.0';
-    lines.push(`  ${formatDate(p.date)}: ${p.automated}/${p.total} automated (${pct}%)`);
+    const total = p.automatedCount + p.manualCount;
+    const pct = total > 0 ? ((p.automatedCount / total) * 100).toFixed(1) : '0.0';
+    lines.push(`  ${formatDate(p.date)}: ${p.automatedCount}/${total} automated (${pct}%)`);
   }
   return lines.join('\n');
 }
@@ -173,8 +198,7 @@ export function formatStatusDistribution(data: StatusDistribution[]): string {
   const lines = [`Status Distribution (total: ${total}):\n`];
   for (const d of data) {
     const pct = total > 0 ? ((d.count / total) * 100).toFixed(1) : '0.0';
-    const statusName = typeof d.status === 'object' ? d.status?.name : (d.status || d.name || d.statusName || 'unknown');
-    lines.push(`  ${statusName}: ${d.count} (${pct}%)`);
+    lines.push(`  ${d.statusName}: ${d.count} (${pct}%)`);
   }
   return lines.join('\n');
 }
@@ -183,8 +207,7 @@ export function formatSuccessRate(data: SuccessRatePoint[]): string {
   if (data.length === 0) return 'No success rate data.';
   const lines = ['Success Rate Trend:\n'];
   for (const p of data) {
-    const rate = p.successRate ?? p.success_rate ?? 0;
-    lines.push(`  ${formatDate(p.date)}: ${Number(rate).toFixed(1)}% (${p.passed ?? 0}/${p.total ?? 0})`);
+    lines.push(`  ${formatDate(p.date)}: ${p.avgSuccessRate.toFixed(1)}% (${p.testResultsCount} results / ${p.testCasesCount} cases)`);
   }
   return lines.join('\n');
 }
