@@ -1,6 +1,6 @@
 # TestOps MCP Server
 
-An [MCP](https://modelcontextprotocol.io/) server that connects AI agents (Claude, Cursor, etc.) to [Allure TestOps](https://qameta.io/) — enabling test case management, launches, defects, and analytics through natural language.
+An [MCP](https://modelcontextprotocol.io/) server that connects AI agents (Claude, Cursor, etc.) to [TestOps](https://qatools.ru/) — enabling test case management, launches, defects, and analytics through natural language.
 
 ## Features
 
@@ -18,7 +18,7 @@ An [MCP](https://modelcontextprotocol.io/) server that connects AI agents (Claud
 ### Prerequisites
 
 - Node.js 18+
-- Access to an Allure TestOps instance
+- Access to a [TestOps](https://qatools.ru/) instance
 - TestOps API token
 
 ### Installation
