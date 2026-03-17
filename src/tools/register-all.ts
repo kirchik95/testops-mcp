@@ -15,10 +15,12 @@ import { registerLaunchTools } from './launches.js';
 import { registerTestResultTools } from './test-results.js';
 import { registerDefectTools } from './defects.js';
 import { registerAnalyticsTools } from './analytics.js';
+import { config } from '../config.js';
 
 export function registerAllTools(server: McpServer): void {
   const auth = new AuthManager();
   const http = new HttpClient(auth);
+  const readOnly = config.readOnly;
 
   const projectsApi = new ProjectsApi(http);
   const testCasesApi = new TestCasesApi(http);
@@ -29,10 +31,10 @@ export function registerAllTools(server: McpServer): void {
   const analyticsApi = new AnalyticsApi(http);
 
   registerProjectTools(server, projectsApi);
-  registerTestCaseTools(server, testCasesApi);
-  registerTestPlanTools(server, testPlansApi);
+  registerTestCaseTools(server, testCasesApi, readOnly);
+  registerTestPlanTools(server, testPlansApi, readOnly);
   registerLaunchTools(server, launchesApi);
-  registerTestResultTools(server, testResultsApi);
-  registerDefectTools(server, defectsApi);
+  registerTestResultTools(server, testResultsApi, readOnly);
+  registerDefectTools(server, defectsApi, readOnly);
   registerAnalyticsTools(server, analyticsApi);
 }

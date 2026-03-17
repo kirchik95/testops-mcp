@@ -9,6 +9,9 @@ export class HttpClient {
   }
 
   async get<T>(path: string, params?: Record<string, string | number | boolean | undefined>): Promise<T> {
+    if (config.pageSize && params && params.size === undefined) {
+      params.size = config.pageSize;
+    }
     const url = this.buildUrl(path, params);
     return this.request<T>(url, { method: 'GET' });
   }
