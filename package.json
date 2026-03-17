@@ -1,0 +1,35 @@
+{
+  "name": "testops-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for TestOps — test management, launches, defects, and test results",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "testops-mcp": "build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "testops",
+    "test-management",
+    "qa"
+  ],
+  "author": "k.martynov",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
+}

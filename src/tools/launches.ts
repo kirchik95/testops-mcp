@@ -1,0 +1,46 @@
+import { z } from 'zod';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { LaunchesApi } from '../api/launches.js';
+import { formatLaunches, formatLaunch, formatTestResults } from '../utils/formatting.js';
+
+export function registerLaunchTools(server: McpServer, api: LaunchesApi): void {
+  server.tool(
+    'list-launches',
+    'List test launches in a project.',
+    {
+      projectId: z.number().describe('Project ID'),
+      page: z.number().optional(),
+      size: z.number().optional(),
+    },
+    async (params) => {
+      const { projectId, ...rest } = params;
+      const result = await api.list(projectId, rest);
+      return { content: [{ type: 'text' as const, text: formatLaunches(result) }] };
+    }
+  );
+
+  server.tool(
+    'get-launch',
+    'Get launch details by ID.',
+    { id: z.number().describe('Launch ID') },
+    async (params) => {
+      const result = await api.getById(params.id);
+      return { content: [{ type: 'text' as const, text: formatLaunch(result) }] };
+    }
+  );
+
+  server.tool(
+    'get-launch-test-results',
+    'Get test results for a specific launch.',
+    {
+      id: z.number().describe('Launch ID'),
+      page: z.number().optional(),
+      size: z.number().optional(),
+    },
+    async (params) => {
+      const { id, ...rest } = params;
+      const result = await api.getTestResults(id, rest);
+      return { content: [{ type: 'text' as const, text: formatTestResults(result) }] };
+    }
+  );
+}
