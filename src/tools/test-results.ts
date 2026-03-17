@@ -14,7 +14,7 @@ export function registerTestResultTools(server: McpServer, api: TestResultsApi, 
     'List test results in a project. Optionally filter by launch.',
     {
       projectId: projectIdSchema,
-      launchId: z.number().optional().describe('Filter by launch ID'),
+      launchId: z.number().describe('Launch ID (required by API)'),
       page: z.number().optional(),
       size: z.number().optional(),
     },

@@ -119,7 +119,7 @@ export function formatTestResults(data: PageResponse<TestResult>): string {
   if (data.content.length === 0) return 'No test results found.';
   const lines = [`Found ${data.totalElements} test result(s) (page ${data.number + 1} of ${data.totalPages}):\n`];
   for (const tr of data.content) {
-    lines.push(`- [#${tr.id}] ${tr.name} | Status: ${tr.status}${tr.duration ? ` | Duration: ${tr.duration}ms` : ''}`);
+    lines.push(`- [#${tr.id}] ${tr.name} | Status: ${tr.status || 'pending'}${tr.duration ? ` | Duration: ${tr.duration}ms` : ''}`);
   }
   return lines.join('\n');
 }
@@ -127,7 +127,7 @@ export function formatTestResults(data: PageResponse<TestResult>): string {
 export function formatTestResult(tr: TestResult): string {
   return [
     `Test Result #${tr.id}: ${tr.name}`,
-    `  Status: ${tr.status}`,
+    `  Status: ${tr.status || 'pending'}`,
     tr.testCaseId ? `  Test Case: #${tr.testCaseId}` : null,
     tr.launchId ? `  Launch: #${tr.launchId}` : null,
     tr.duration ? `  Duration: ${tr.duration}ms` : null,
@@ -173,7 +173,8 @@ export function formatStatusDistribution(data: StatusDistribution[]): string {
   const lines = [`Status Distribution (total: ${total}):\n`];
   for (const d of data) {
     const pct = total > 0 ? ((d.count / total) * 100).toFixed(1) : '0.0';
-    lines.push(`  ${d.status}: ${d.count} (${pct}%)`);
+    const statusName = typeof d.status === 'object' ? d.status?.name : (d.status || d.name || d.statusName || 'unknown');
+    lines.push(`  ${statusName}: ${d.count} (${pct}%)`);
   }
   return lines.join('\n');
 }
@@ -182,7 +183,8 @@ export function formatSuccessRate(data: SuccessRatePoint[]): string {
   if (data.length === 0) return 'No success rate data.';
   const lines = ['Success Rate Trend:\n'];
   for (const p of data) {
-    lines.push(`  ${formatDate(p.date)}: ${p.successRate.toFixed(1)}% (${p.passed}/${p.total})`);
+    const rate = p.successRate ?? p.success_rate ?? 0;
+    lines.push(`  ${formatDate(p.date)}: ${Number(rate).toFixed(1)}% (${p.passed ?? 0}/${p.total ?? 0})`);
   }
   return lines.join('\n');
 }

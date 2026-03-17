@@ -110,7 +110,7 @@ export interface LaunchStatistic {
 export interface TestResult {
   id: number;
   name: string;
-  status: string; // passed, failed, broken, skipped, unknown
+  status?: string; // passed, failed, broken, skipped, unknown — may be absent in manual launches
   launchId?: number;
   testCaseId?: number;
   projectId?: number;
@@ -158,15 +158,18 @@ export interface AutomationTrendPoint {
 }
 
 export interface StatusDistribution {
-  status: string;
+  status: string | { name?: string };
+  name?: string;
+  statusName?: string;
   count: number;
 }
 
 export interface SuccessRatePoint {
   date: number;
-  successRate: number;
-  total: number;
-  passed: number;
+  successRate?: number;
+  success_rate?: number;
+  total?: number;
+  passed?: number;
 }
 
 // Shared
