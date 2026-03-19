@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-03-19
+
+### Added
+
+- **ESLint + Prettier** — static analysis and auto-formatting with `eslint.config.js` (flat config), `typescript-eslint`, and `eslint-config-prettier`. New scripts: `lint`, `lint:fix`, `format`
+- **Shared `projectIdSchema`** — extracted to `src/utils/schemas.ts`, replacing 6 identical copies across tool files
+
+### Removed
+
+- **Dead code `formatExternalLinks`** — unused function removed from `formatting.ts` along with its tests and imports
+
+### Fixed
+
+- 33 ESLint errors: `Function` type → explicit signatures in tests, unused variables/imports, `global.fetch` type cast
+- `tsconfig.json` — added `"node"` to `types`, removed `vitest.config.ts` from `include` (was outside `rootDir`)
+- Pre-commit hook now runs **lint + tests** (previously tests only)
+
 ## [1.4.1] - 2026-03-19
 
 ### Added
