@@ -2,7 +2,7 @@ import {
   Project, TestCase, TestCaseOverview, TestPlan, Launch, TestResult, Defect,
   AutomationTrendPoint, StatusDistribution, SuccessRatePoint,
   TestCaseScenario, TestCaseStep, TestStatusCount,
-  IssueDto, MemberDto, CustomFieldWithValues, CustomFieldValueWithCf,
+  IssueDto, MemberDto, CustomFieldValueWithCf,
   TestCaseRelationDto, RequirementDto, TestKeyDto, ExternalLink,
   TestLayer, Workflow,
 } from '../types/api-types.js';
@@ -156,12 +156,21 @@ export function formatMembers(members: MemberDto[]): string {
   return lines.join('\n');
 }
 
-export function formatCustomFields(fields: CustomFieldWithValues[]): string {
+export function formatCustomFields(fields: CustomFieldValueWithCf[]): string {
   if (fields.length === 0) return 'No custom fields.';
-  const lines = [`${fields.length} custom field(s):\n`];
+  const grouped = new Map<number, { name: string; id: number; values: { id: number; name: string }[] }>();
   for (const f of fields) {
-    const vals = f.values?.map(v => v.name || `#${v.id}`).join(', ') || 'none';
-    lines.push(`  - ${f.customField?.name || 'field'} (id: ${f.customField?.id}): ${vals}`);
+    const cfId = f.customField?.id;
+    if (cfId === undefined) continue;
+    if (!grouped.has(cfId)) {
+      grouped.set(cfId, { name: f.customField!.name || 'field', id: cfId, values: [] });
+    }
+    grouped.get(cfId)!.values.push({ id: f.id ?? 0, name: f.name || `#${f.id}` });
+  }
+  const lines = [`${grouped.size} custom field(s):\n`];
+  for (const [, cf] of grouped) {
+    const vals = cf.values.map(v => `${v.name} (value.id: ${v.id})`).join(', ');
+    lines.push(`  - ${cf.name} (field.id: ${cf.id}): ${vals}`);
   }
   return lines.join('\n');
 }

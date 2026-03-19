@@ -1,7 +1,7 @@
 import { HttpClient } from '../client/http-client.js';
 import {
   TestCase, TestCaseOverview, CreateTestCaseRequest, UpdateTestCaseRequest,
-  TestCaseScenario, IssueDto, MemberDto, CustomFieldWithValues,
+  TestCaseScenario, IssueDto, MemberDto, CustomFieldWithValues, CustomFieldValueWithCf,
   TestCaseRelationDto, RequirementDto, TestKeyDto, ExternalLink,
 } from '../types/api-types.js';
 import { PageResponse } from '../types/common.js';
@@ -63,8 +63,8 @@ export class TestCasesApi {
     return this.http.post<MemberDto[]>(`/api/testcase/${testCaseId}/members`, members);
   }
 
-  async getCustomFields(testCaseId: number, projectId: number): Promise<CustomFieldWithValues[]> {
-    return this.http.get<CustomFieldWithValues[]>(`/api/testcase/${testCaseId}/cfv`, { projectId });
+  async getCustomFields(testCaseId: number, projectId: number): Promise<CustomFieldValueWithCf[]> {
+    return this.http.get<CustomFieldValueWithCf[]>(`/api/testcase/${testCaseId}/cfv`, { projectId });
   }
 
   async updateCustomFields(testCaseId: number, fields: CustomFieldWithValues[]): Promise<void> {
