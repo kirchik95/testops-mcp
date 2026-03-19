@@ -7,48 +7,71 @@ export interface Project {
   lastModifiedDate?: number;
 }
 
-// Test Case
+// Test Case (matches TestCaseDto from API)
 export interface TestCase {
   id: number;
   name: string;
   description?: string;
   projectId: number;
-  status?: string; // Active, Draft, Deprecated, etc.
-  layer?: string; // UI, API, Unit
+  status?: StatusRef;
+  testLayer?: StatusRef;
   automated?: boolean;
   tags?: Tag[];
   createdDate?: number;
   lastModifiedDate?: number;
   createdBy?: string;
   lastModifiedBy?: string;
-  members?: Member[];
-  links?: Link[];
-  customFields?: CustomFieldValue[];
+  links?: ExternalLink[];
   precondition?: string;
   expectedResult?: string;
+  fullName?: string;
+  duration?: number;
+  workflow?: StatusRef;
 }
 
+// Test Case Overview (matches TestCaseOverviewDto — full info including sub-resources)
+export interface TestCaseOverview extends TestCase {
+  members?: MemberDto[];
+  customFields?: CustomFieldValueWithCf[];
+  issues?: IssueDto[];
+  requirements?: RequirementDto[];
+  testKeys?: TestKeyDto[];
+}
+
+// Matches TestCaseCreateV2Dto
 export interface CreateTestCaseRequest {
   name: string;
   projectId: number;
   description?: string;
-  status?: string;
-  layer?: string;
+  statusId?: number;
+  testLayerId?: number;
   automated?: boolean;
   tags?: { name: string }[];
   precondition?: string;
   expectedResult?: string;
+  fullName?: string;
+  links?: ExternalLink[];
+  members?: MemberDto[];
+  customFields?: CustomFieldValueWithCf[];
+  workflowId?: number;
 }
 
+// Matches TestCasePatchV2Dto
 export interface UpdateTestCaseRequest {
   name?: string;
   description?: string;
-  status?: string;
-  layer?: string;
+  statusId?: number;
+  testLayerId?: number;
   automated?: boolean;
   tags?: { name: string }[];
   precondition?: string;
   expectedResult?: string;
+  fullName?: string;
+  links?: ExternalLink[];
+  members?: MemberDto[];
+  customFields?: CustomFieldValueWithCf[];
+  duration?: number;
+  workflowId?: number;
 }
 
 export interface TestCaseScenario {
@@ -106,8 +129,8 @@ export interface Launch {
   createdBy?: string;
   lastModifiedBy?: string;
   tags?: Tag[];
-  issues?: Link[];
-  links?: Link[];
+  issues?: ExternalLink[];
+  links?: ExternalLink[];
   releaseId?: number;
   statistic?: TestStatusCount[];
 }
@@ -196,21 +219,94 @@ export interface Tag {
   name: string;
 }
 
-export interface Member {
+export interface StatusRef {
   id?: number;
-  userName?: string;
-  role?: string;
+  name?: string;
 }
 
-export interface Link {
-  id?: number;
+export interface ExternalLink {
   name?: string;
   url?: string;
   type?: string;
 }
 
-export interface CustomFieldValue {
+export interface MemberDto {
   id?: number;
   name?: string;
-  value?: string;
+  role?: RoleDto;
 }
+
+export interface RoleDto {
+  id?: number;
+  name?: string;
+}
+
+export interface IssueDto {
+  id?: number;
+  name?: string;
+  url?: string;
+  displayName?: string;
+  integrationId?: number;
+  integrationType?: string;
+  status?: string;
+  summary?: string;
+  closed?: boolean;
+}
+
+export interface CustomFieldDto {
+  id?: number;
+  name?: string;
+  required?: boolean;
+  singleSelect?: boolean;
+  archived?: boolean;
+  locked?: boolean;
+}
+
+export interface CustomFieldValueDto {
+  id?: number;
+  name?: string;
+}
+
+export interface CustomFieldValueWithCf {
+  id?: number;
+  name?: string;
+  customField?: CustomFieldDto;
+  global?: boolean;
+}
+
+export interface CustomFieldWithValues {
+  customField?: CustomFieldDto;
+  values?: CustomFieldValueDto[];
+}
+
+export interface RequirementDto {
+  id?: number;
+  name?: string;
+  displayName?: string;
+  title?: string;
+  url?: string;
+  integrationId?: number;
+  integrationType?: string;
+}
+
+export interface TestKeyDto {
+  id?: number;
+  name?: string;
+  url?: string;
+  integrationId?: number;
+}
+
+export interface TestCaseRelationDto {
+  id?: number;
+  target?: { id: number; name?: string };
+  type?: TestCaseRelationType;
+}
+
+export type TestCaseRelationType =
+  | 'related to'
+  | 'clones'
+  | 'is cloned by'
+  | 'duplicates'
+  | 'is duplicated by'
+  | 'automates'
+  | 'is automated by';

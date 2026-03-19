@@ -1,4 +1,10 @@
-import { Project, TestCase, TestPlan, Launch, TestResult, Defect, AutomationTrendPoint, StatusDistribution, SuccessRatePoint, TestCaseScenario, TestCaseStep, TestStatusCount } from '../types/api-types.js';
+import {
+  Project, TestCase, TestCaseOverview, TestPlan, Launch, TestResult, Defect,
+  AutomationTrendPoint, StatusDistribution, SuccessRatePoint,
+  TestCaseScenario, TestCaseStep, TestStatusCount,
+  IssueDto, MemberDto, CustomFieldWithValues, CustomFieldValueWithCf,
+  TestCaseRelationDto, RequirementDto, TestKeyDto, ExternalLink,
+} from '../types/api-types.js';
 import { PageResponse } from '../types/common.js';
 
 function formatDate(dateOrTimestamp?: number | string): string {
@@ -49,32 +55,150 @@ export function formatProject(p: Project): string {
   ].filter(Boolean).join('\n');
 }
 
+function statusName(s?: { name?: string } | string): string {
+  if (!s) return 'N/A';
+  if (typeof s === 'string') return s;
+  return s.name || 'N/A';
+}
+
 export function formatTestCases(data: PageResponse<TestCase>): string {
   if (data.content.length === 0) return 'No test cases found.';
   const lines = [`Found ${data.totalElements} test case(s) (page ${data.number + 1} of ${data.totalPages}):\n`];
   for (const tc of data.content) {
     const tags = tc.tags?.map(t => t.name).join(', ') || '';
     lines.push(`${tc.id}. [#${tc.id}] ${tc.name}`);
-    lines.push(`   Status: ${tc.status || 'N/A'} | Layer: ${tc.layer || 'N/A'} | Automated: ${boolLabel(tc.automated)}${tags ? ` | Tags: ${tags}` : ''}`);
+    lines.push(`   Status: ${statusName(tc.status)} | Layer: ${statusName(tc.testLayer)} | Automated: ${boolLabel(tc.automated)}${tags ? ` | Tags: ${tags}` : ''}`);
   }
   return lines.join('\n');
 }
 
 export function formatTestCase(tc: TestCase): string {
   const tags = tc.tags?.map(t => t.name).join(', ') || 'none';
+  const links = tc.links && tc.links.length > 0
+    ? tc.links.map(l => `    - ${l.name || l.url || 'link'} (${l.url || 'N/A'})`).join('\n')
+    : null;
   return [
     `Test Case #${tc.id}: ${tc.name}`,
     `  Project: ${tc.projectId}`,
-    `  Status: ${tc.status || 'N/A'}`,
-    `  Layer: ${tc.layer || 'N/A'}`,
+    `  Status: ${statusName(tc.status)}`,
+    `  Layer: ${statusName(tc.testLayer)}`,
     `  Automated: ${boolLabel(tc.automated)}`,
     `  Tags: ${tags}`,
+    tc.fullName ? `  Full Name: ${tc.fullName}` : null,
+    tc.duration ? `  Duration: ${tc.duration}ms` : null,
     tc.description ? `  Description: ${tc.description}` : null,
     tc.precondition ? `  Precondition: ${tc.precondition}` : null,
     tc.expectedResult ? `  Expected Result: ${tc.expectedResult}` : null,
+    links ? `  Links:\n${links}` : null,
     `  Created: ${formatDate(tc.createdDate)} by ${tc.createdBy || 'N/A'}`,
     `  Modified: ${formatDate(tc.lastModifiedDate)} by ${tc.lastModifiedBy || 'N/A'}`,
   ].filter(Boolean).join('\n');
+}
+
+export function formatTestCaseOverview(tc: TestCaseOverview): string {
+  const base = formatTestCase(tc);
+  const sections: string[] = [base];
+
+  if (tc.members && tc.members.length > 0) {
+    sections.push('  Members:');
+    for (const m of tc.members) {
+      sections.push(`    - ${m.name || `User #${m.id}`} (${m.role?.name || 'N/A'})`);
+    }
+  }
+
+  if (tc.issues && tc.issues.length > 0) {
+    sections.push('  Issue Links:');
+    for (const i of tc.issues) {
+      sections.push(`    - ${i.displayName || i.name || 'issue'} (${i.url || 'N/A'})${i.closed ? ' [closed]' : ''}`);
+    }
+  }
+
+  if (tc.customFields && tc.customFields.length > 0) {
+    sections.push('  Custom Fields:');
+    for (const cf of tc.customFields) {
+      sections.push(`    - ${cf.customField?.name || 'field'}: ${cf.name || 'N/A'}`);
+    }
+  }
+
+  if (tc.requirements && tc.requirements.length > 0) {
+    sections.push('  Requirements:');
+    for (const r of tc.requirements) {
+      sections.push(`    - ${r.displayName || r.name || 'req'} (${r.url || 'N/A'})`);
+    }
+  }
+
+  if (tc.testKeys && tc.testKeys.length > 0) {
+    sections.push('  Test Keys:');
+    for (const tk of tc.testKeys) {
+      sections.push(`    - ${tk.name}${tk.url ? ` (${tk.url})` : ''}`);
+    }
+  }
+
+  return sections.join('\n');
+}
+
+export function formatIssues(issues: IssueDto[]): string {
+  if (issues.length === 0) return 'No issue links.';
+  const lines = [`${issues.length} issue link(s):\n`];
+  for (const i of issues) {
+    lines.push(`  - ${i.displayName || i.name || 'issue'}${i.url ? ` (${i.url})` : ''}${i.closed ? ' [closed]' : ''}`);
+  }
+  return lines.join('\n');
+}
+
+export function formatMembers(members: MemberDto[]): string {
+  if (members.length === 0) return 'No members.';
+  const lines = [`${members.length} member(s):\n`];
+  for (const m of members) {
+    lines.push(`  - ${m.name || `User #${m.id}`} — ${m.role?.name || 'N/A'}`);
+  }
+  return lines.join('\n');
+}
+
+export function formatCustomFields(fields: CustomFieldWithValues[]): string {
+  if (fields.length === 0) return 'No custom fields.';
+  const lines = [`${fields.length} custom field(s):\n`];
+  for (const f of fields) {
+    const vals = f.values?.map(v => v.name || `#${v.id}`).join(', ') || 'none';
+    lines.push(`  - ${f.customField?.name || 'field'} (id: ${f.customField?.id}): ${vals}`);
+  }
+  return lines.join('\n');
+}
+
+export function formatRelations(relations: TestCaseRelationDto[]): string {
+  if (relations.length === 0) return 'No relations.';
+  const lines = [`${relations.length} relation(s):\n`];
+  for (const r of relations) {
+    lines.push(`  - [${r.type}] → ${r.target?.name || 'N/A'} (#${r.target?.id})`);
+  }
+  return lines.join('\n');
+}
+
+export function formatRequirements(requirements: RequirementDto[]): string {
+  if (requirements.length === 0) return 'No requirements.';
+  const lines = [`${requirements.length} requirement(s):\n`];
+  for (const r of requirements) {
+    lines.push(`  - ${r.displayName || r.name || 'req'}${r.url ? ` (${r.url})` : ''}`);
+  }
+  return lines.join('\n');
+}
+
+export function formatTestKeys(testKeys: TestKeyDto[]): string {
+  if (testKeys.length === 0) return 'No test keys.';
+  const lines = [`${testKeys.length} test key(s):\n`];
+  for (const tk of testKeys) {
+    lines.push(`  - ${tk.name}${tk.url ? ` (${tk.url})` : ''}`);
+  }
+  return lines.join('\n');
+}
+
+export function formatExternalLinks(links: ExternalLink[]): string {
+  if (links.length === 0) return 'No links.';
+  const lines = [`${links.length} link(s):\n`];
+  for (const l of links) {
+    lines.push(`  - ${l.name || l.url || 'link'} (${l.url || 'N/A'})${l.type ? ` [${l.type}]` : ''}`);
+  }
+  return lines.join('\n');
 }
 
 export function formatScenario(scenario: TestCaseScenario): string {

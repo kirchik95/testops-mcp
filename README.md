@@ -85,12 +85,29 @@ Or with `npx` (no global install required):
 |---|---|
 | `list-test-cases` | List test cases in a project |
 | `search-test-cases` | Search test cases by query |
-| `get-test-case` | Get test case details |
-| `create-test-case` | Create a test case |
-| `update-test-case` | Update a test case |
+| `get-test-case` | Get test case basic details |
+| `get-test-case-overview` | Get full test case details (members, issues, custom fields, requirements, test keys) |
+| `create-test-case` | Create a test case (with tags, links, members) |
+| `update-test-case` | Update a test case (with tags, links, members, duration) |
 | `delete-test-case` | Delete a test case |
 | `get-test-case-scenario` | Get test case scenario (steps) |
 | `update-test-case-scenario` | Update test case scenario |
+
+### Test Case Sub-Resources
+| Tool | Description |
+|---|---|
+| `get-test-case-issues` | Get issue links (Jira, YouTrack, etc.) |
+| `set-test-case-issues` | Set issue links for a test case |
+| `get-test-case-members` | Get members (owner, reviewers) |
+| `set-test-case-members` | Set members for a test case |
+| `get-test-case-custom-fields` | Get custom field values (Component, Priority, Team, etc.) |
+| `set-test-case-custom-fields` | Update custom field values |
+| `get-test-case-relations` | Get relations (related to, clones, duplicates, etc.) |
+| `set-test-case-relations` | Set relations for a test case |
+| `get-test-case-requirements` | Get linked requirements |
+| `set-test-case-requirements` | Set requirements for a test case |
+| `get-test-case-test-keys` | Get test keys |
+| `set-test-case-test-keys` | Set test keys for a test case |
 
 ### Test Plans
 | Tool | Description |

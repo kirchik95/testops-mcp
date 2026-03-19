@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-03-19
+
+### Added
+
+- **Test case sub-resource tools** — 12 new tools for managing all test case fields via dedicated API endpoints:
+  - `get/set-test-case-issues` — issue links (Jira, YouTrack, etc.)
+  - `get/set-test-case-members` — members with roles (owner, reviewer, etc.)
+  - `get/set-test-case-custom-fields` — custom field values (Component, Priority, Team, Section, etc.)
+  - `get/set-test-case-relations` — relations (related to, clones, duplicates, automates, etc.)
+  - `get/set-test-case-requirements` — linked requirements
+  - `get/set-test-case-test-keys` — test keys
+- **`get-test-case-overview`** — new tool returning full test case details including members, issues, custom fields, requirements, and test keys in one call
+- `links` and `members` parameters in `create-test-case` and `update-test-case`
+- `duration` parameter in `update-test-case`
+
+### Changed
+
+- **Types aligned with Swagger spec** for test case DTOs:
+  - `TestCase.status` and `TestCase.testLayer` are now `StatusRef` objects (with `id` and `name`) instead of plain strings
+  - Added `TestCaseOverview` interface extending `TestCase` with sub-resource fields
+  - Added proper DTOs: `MemberDto`, `RoleDto`, `IssueDto`, `ExternalLink`, `CustomFieldDto`, `CustomFieldValueDto`, `CustomFieldValueWithCf`, `CustomFieldWithValues`, `RequirementDto`, `TestKeyDto`, `TestCaseRelationDto`
+  - `CreateTestCaseRequest` / `UpdateTestCaseRequest` aligned with `TestCaseCreateV2Dto` / `TestCasePatchV2Dto` — use `statusId`/`testLayerId` (numbers) instead of string names
+- **Formatting** — `formatTestCase` now displays links; added formatters for all sub-resource types
+- `get-test-case` description updated to mention `get-test-case-overview` for full details
+
 ## [1.2.0] - 2026-03-17
 
 ### Changed
