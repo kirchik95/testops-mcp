@@ -4,15 +4,13 @@ import { TestCasesApi } from '../api/test-cases.js';
 import {
   formatTestCases, formatTestCase, formatTestCaseOverview, formatScenario,
   formatIssues, formatMembers, formatCustomFields, formatRelations,
-  formatRequirements, formatTestKeys, formatExternalLinks,
+  formatRequirements, formatTestKeys,
 } from '../utils/formatting.js';
-import { config, resolveProjectId } from '../config.js';
+import { resolveProjectId } from '../config.js';
 import { withErrorHandler } from '../utils/error-handler.js';
+import { projectIdSchema } from '../utils/schemas.js';
 
 export function registerTestCaseTools(server: McpServer, api: TestCasesApi, readOnly = false): void {
-  const projectIdSchema = config.projectId
-    ? z.number().optional().describe('Project ID (optional if TESTOPS_PROJECT_ID is set)')
-    : z.number().describe('Project ID (required)');
 
   // --- Core CRUD ---
 

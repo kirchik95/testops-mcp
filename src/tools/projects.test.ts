@@ -4,9 +4,9 @@ import type { ProjectsApi } from '../api/projects.js'
 import { registerProjectTools } from './projects.js'
 
 function createMockServer() {
-  const tools = new Map<string, { config: any; handler: Function }>()
+  const tools = new Map<string, { config: any; handler: (...args: any[]) => any }>()
   return {
-    registerTool: vi.fn((name: string, config: any, handler: Function) => {
+    registerTool: vi.fn((name: string, config: any, handler: (...args: any[]) => any) => {
       tools.set(name, { config, handler })
     }),
     _tools: tools,

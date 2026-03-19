@@ -3,7 +3,7 @@ import {
   AutomationTrendPoint, StatusDistribution, SuccessRatePoint,
   TestCaseScenario, TestCaseStep, TestStatusCount,
   IssueDto, MemberDto, CustomFieldValueWithCf,
-  TestCaseRelationDto, RequirementDto, TestKeyDto, ExternalLink,
+  TestCaseRelationDto, RequirementDto, TestKeyDto,
   TestLayer, Workflow,
 } from '../types/api-types.js';
 import { PageResponse } from '../types/common.js';
@@ -22,10 +22,8 @@ function boolLabel(val?: boolean): string {
 function formatStatistic(statistic?: TestStatusCount[]): string {
   if (!statistic || statistic.length === 0) return '';
   const map: Record<string, number> = {};
-  let total = 0;
   for (const s of statistic) {
     map[s.status] = s.count;
-    total += s.count;
   }
   const parts = [
     `P:${map['passed'] ?? 0}`,
@@ -198,15 +196,6 @@ export function formatTestKeys(testKeys: TestKeyDto[]): string {
   const lines = [`${testKeys.length} test key(s):\n`];
   for (const tk of testKeys) {
     lines.push(`  - ${tk.name}${tk.url ? ` (${tk.url})` : ''}`);
-  }
-  return lines.join('\n');
-}
-
-export function formatExternalLinks(links: ExternalLink[]): string {
-  if (links.length === 0) return 'No links.';
-  const lines = [`${links.length} link(s):\n`];
-  for (const l of links) {
-    lines.push(`  - ${l.name || l.url || 'link'} (${l.url || 'N/A'})${l.type ? ` [${l.type}]` : ''}`);
   }
   return lines.join('\n');
 }

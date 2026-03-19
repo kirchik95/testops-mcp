@@ -36,7 +36,7 @@ describe('HttpClient', () => {
     mockAuth = createMockAuth();
     client = new HttpClient(mockAuth);
     fetchMock = vi.fn().mockResolvedValue(jsonResponse({ result: 'ok' }));
-    global.fetch = fetchMock;
+    global.fetch = fetchMock as typeof fetch;
     mockConfig.pageSize = undefined;
   });
 
@@ -132,7 +132,7 @@ describe('HttpClient', () => {
       fetchMock
         .mockResolvedValueOnce({ ok: false, status: 401, text: async () => 'Unauthorized' })
         .mockResolvedValueOnce(jsonResponse({ success: true }));
-      global.fetch = fetchMock;
+      global.fetch = fetchMock as typeof fetch;
 
       const result = await localClient.get('/api/data');
 
@@ -146,7 +146,7 @@ describe('HttpClient', () => {
       const localClient = new HttpClient(auth);
 
       fetchMock.mockResolvedValue({ ok: false, status: 401, text: async () => 'Unauthorized' });
-      global.fetch = fetchMock;
+      global.fetch = fetchMock as typeof fetch;
 
       await expect(localClient.get('/api/data')).rejects.toThrow(
         /API error 401 GET.*\/api\/data: Unauthorized/,
@@ -158,7 +158,7 @@ describe('HttpClient', () => {
   describe('204 No Content', () => {
     it('returns undefined', async () => {
       fetchMock.mockResolvedValue({ ok: true, status: 204 });
-      global.fetch = fetchMock;
+      global.fetch = fetchMock as typeof fetch;
 
       const result = await client.delete('/api/items/1');
 
@@ -173,7 +173,7 @@ describe('HttpClient', () => {
         status: 500,
         text: async () => 'Internal Server Error',
       });
-      global.fetch = fetchMock;
+      global.fetch = fetchMock as typeof fetch;
 
       await expect(client.get('/api/items')).rejects.toThrow(
         'API error 500 GET https://testops.example.com/api/items: Internal Server Error',

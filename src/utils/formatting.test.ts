@@ -2,7 +2,7 @@ import {
   formatProjects, formatProject,
   formatTestCases, formatTestCase, formatTestCaseOverview,
   formatIssues, formatMembers, formatCustomFields, formatRelations,
-  formatRequirements, formatTestKeys, formatExternalLinks,
+  formatRequirements, formatTestKeys,
   formatScenario,
   formatTestPlans, formatTestPlan,
   formatLaunches, formatLaunch,
@@ -15,8 +15,7 @@ import {
 import type {
   Project, TestCase, TestCaseOverview, TestPlan, Launch, TestResult, Defect,
   AutomationTrendPoint, StatusDistribution, SuccessRatePoint,
-  TestCaseScenario, IssueDto, MemberDto, CustomFieldValueWithCf,
-  TestCaseRelationDto, RequirementDto, TestKeyDto, ExternalLink,
+  TestCaseScenario, CustomFieldValueWithCf,
   TestLayer, Workflow,
 } from '../types/api-types.js';
 
@@ -256,23 +255,6 @@ describe('formatTestKeys', () => {
     const out = formatTestKeys([{ name: 'K-2' }]);
     expect(out).toContain('  - K-2');
     expect(out).not.toContain('K-2 (');
-  });
-});
-
-describe('formatExternalLinks', () => {
-  it('returns fallback for empty list', () => {
-    expect(formatExternalLinks([])).toBe('No links.');
-  });
-
-  it('formats links with type', () => {
-    const out = formatExternalLinks([{ name: 'Doc', url: 'https://d', type: 'wiki' }]);
-    expect(out).toContain('1 link(s)');
-    expect(out).toContain('Doc (https://d) [wiki]');
-  });
-
-  it('handles missing name and url', () => {
-    const out = formatExternalLinks([{}]);
-    expect(out).toContain('link (N/A)');
   });
 });
 

@@ -2,13 +2,11 @@ import { z } from 'zod/v4';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { TestResultsApi } from '../api/test-results.js';
 import { formatTestResults, formatTestResult } from '../utils/formatting.js';
-import { config, resolveProjectId } from '../config.js';
+import { resolveProjectId } from '../config.js';
 import { withErrorHandler } from '../utils/error-handler.js';
+import { projectIdSchema } from '../utils/schemas.js';
 
 export function registerTestResultTools(server: McpServer, api: TestResultsApi, readOnly = false): void {
-  const projectIdSchema = config.projectId
-    ? z.number().optional().describe('Project ID (optional if TESTOPS_PROJECT_ID is set)')
-    : z.number().describe('Project ID (required)');
 
   server.registerTool(
     'list-test-results',

@@ -2,13 +2,11 @@ import { z } from 'zod/v4';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AnalyticsApi } from '../api/analytics.js';
 import { formatAutomationTrend, formatStatusDistribution, formatSuccessRate } from '../utils/formatting.js';
-import { config, resolveProjectId } from '../config.js';
+import { resolveProjectId } from '../config.js';
 import { withErrorHandler } from '../utils/error-handler.js';
+import { projectIdSchema } from '../utils/schemas.js';
 
 export function registerAnalyticsTools(server: McpServer, api: AnalyticsApi): void {
-  const projectIdSchema = config.projectId
-    ? z.number().optional().describe('Project ID (optional if TESTOPS_PROJECT_ID is set)')
-    : z.number().describe('Project ID (required)');
 
   server.registerTool(
     'get-automation-trend',

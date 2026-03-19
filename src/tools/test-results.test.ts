@@ -21,9 +21,9 @@ vi.mock('../config.js', () => ({
 }))
 
 function createMockServer() {
-  const tools = new Map<string, { config: any; handler: Function }>()
+  const tools = new Map<string, { config: any; handler: (...args: any[]) => any }>()
   return {
-    registerTool: vi.fn((name: string, config: any, handler: Function) => {
+    registerTool: vi.fn((name: string, config: any, handler: (...args: any[]) => any) => {
       tools.set(name, { config, handler })
     }),
     _tools: tools,
@@ -65,7 +65,7 @@ describe('registerTestResultTools', () => {
       registerTestResultTools(server, api)
 
       const mockData = {
-        content: [{ id: 1, name: 'Login Test', status: 'passed' }],
+        content: [{ id: 1, name: 'Login Test', status: 'passed' as const }],
         totalElements: 1,
         totalPages: 1,
         number: 0,

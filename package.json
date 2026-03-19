@@ -16,6 +16,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write src/",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -32,8 +35,13 @@
     "zod": "^4.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^22",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
     "typescript": "^5",
+    "typescript-eslint": "^8.57.1",
     "vitest": "^4.1.0"
   }
 }
