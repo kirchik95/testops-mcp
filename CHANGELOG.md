@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-19
+
+### Changed
+
+- **Migrated all tools from `server.tool()` to `server.registerTool()`** — `server.tool()` is frozen since protocol version 2025-03-26 and marked `@deprecated` in SDK v1.27. The new `registerTool()` API supports `title`, `outputSchema`, `annotations`, and `_meta` for future use.
+- **Switched Zod imports from v3-compat layer to native v4** — `import { z } from 'zod'` (v3-compat shim) replaced with `import { z } from 'zod/v4'` across all tool files. Reduces bundle overhead and aligns with Zod v4 API.
+- **Pinned dependency versions** — `"latest"` replaced with `"^1.27.0"` (`@modelcontextprotocol/sdk`) and `"^4.3.0"` (`zod`) to prevent breaking changes on install.
+- **Server version synced with package.json** — `McpServer` now reads version from `package.json` via `createRequire` instead of hardcoded `"1.0.0"`.
+
+### Added
+
+- **Error handling wrapper for all tools** — new `withErrorHandler()` utility wraps every tool callback with try/catch. API errors now return a readable `"Error: ..."` message with `isError: true` instead of crashing the MCP server.
+
+### Fixed
+
+- **Race condition in `AuthManager`** — concurrent requests with an expired token no longer fire multiple OAuth requests. A pending token promise is now cached so all waiters share a single auth call.
+
 ## [1.3.2] - 2026-03-19
 
 ### Fixed

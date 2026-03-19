@@ -9,12 +9,18 @@ interface TokenResponse {
 export class AuthManager {
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
+  private pendingToken: Promise<string> | null = null;
 
   async getAccessToken(): Promise<string> {
     if (this.accessToken && Date.now() < this.tokenExpiresAt) {
       return this.accessToken;
     }
-    return this.fetchToken();
+    if (!this.pendingToken) {
+      this.pendingToken = this.fetchToken().finally(() => {
+        this.pendingToken = null;
+      });
+    }
+    return this.pendingToken;
   }
 
   invalidate(): void {
@@ -43,7 +49,6 @@ export class AuthManager {
 
     const data = (await response.json()) as TokenResponse;
     this.accessToken = data.access_token;
-    // Refresh proactively after 55 minutes
     const expiresIn = data.expires_in ?? 3600;
     this.tokenExpiresAt = Date.now() + (expiresIn - 300) * 1000;
     return this.accessToken;
