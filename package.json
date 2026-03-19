@@ -13,6 +13,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepare": "cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -30,6 +33,7 @@
   },
   "devDependencies": {
     "@types/node": "^22",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.0"
   }
 }
