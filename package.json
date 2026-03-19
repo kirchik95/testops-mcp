@@ -1,6 +1,6 @@
 {
   "name": "testops-mcp",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "MCP server for TestOps — test management, launches, defects, and test results",
   "type": "module",
   "main": "build/index.js",
@@ -11,7 +11,7 @@
     "build"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf build && tsc -p tsconfig.build.json",
     "start": "node build/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
