@@ -225,16 +225,39 @@ describe('TestCasesApi', () => {
   })
 
   describe('updateCustomFields', () => {
-    it('calls PATCH /api/testcase/:id/cfv with fields', async () => {
+    it('reads current fields, merges with updates, and calls POST', async () => {
       const http = createMockHttp()
-      const fields = [{ id: 1, values: ['Low'] }] as any
-      vi.mocked(http.patch).mockResolvedValue(undefined)
+      const currentFields = [
+        { id: 100, name: 'High', customField: { id: 5, name: 'Priority' } },
+        { id: 200, name: 'Backend', customField: { id: 8, name: 'Component' } },
+      ]
+      const newFields = [
+        { id: 101, name: 'Low', customField: { id: 5 } },
+      ]
+      vi.mocked(http.get).mockResolvedValue(currentFields)
+      vi.mocked(http.post).mockResolvedValue(undefined)
 
       const api = new TestCasesApi(http)
-      const result = await api.updateCustomFields(70, fields)
+      const result = await api.updateCustomFields(70, 3, newFields as any)
 
-      expect(http.patch).toHaveBeenCalledWith('/api/testcase/70/cfv', fields)
+      expect(http.get).toHaveBeenCalledWith('/api/testcase/70/cfv', { projectId: 3 })
+      expect(http.post).toHaveBeenCalledWith('/api/testcase/70/cfv', [
+        { id: 200, name: 'Backend', customField: { id: 8, name: 'Component' } },
+        { id: 101, name: 'Low', customField: { id: 5 } },
+      ])
       expect(result).toBeUndefined()
+    })
+
+    it('sends only new fields when no existing fields', async () => {
+      const http = createMockHttp()
+      vi.mocked(http.get).mockResolvedValue([])
+      vi.mocked(http.post).mockResolvedValue(undefined)
+
+      const newFields = [{ id: 50, name: '', customField: { id: 10 } }]
+      const api = new TestCasesApi(http)
+      await api.updateCustomFields(70, 3, newFields as any)
+
+      expect(http.post).toHaveBeenCalledWith('/api/testcase/70/cfv', newFields)
     })
   })
 

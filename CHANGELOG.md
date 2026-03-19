@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2026-03-19
+
+### Fixed
+
+- **`set-test-case-custom-fields` returned 500** — TestOps API diverges from its own Swagger spec: the real endpoint uses `POST` (not `PATCH`) and accepts a flat payload `[{customField: {id}, id, name}]` instead of the nested `[{customField: {id}, values: [{id}]}]` format documented in Swagger. Additionally, the endpoint replaces all custom fields at once (not a partial update), so a merge-before-write strategy was added to prevent accidental data loss.
+
+### Changed
+
+- `updateCustomFields` now reads current field values, merges with the provided updates, and sends the full set via `POST` — only the specified `customField.id`s are replaced, others are preserved
+- `set-test-case-custom-fields` tool now requires `projectId` (needed for the read-merge-write flow)
+- Removed unused `CustomFieldWithValues` and `CustomFieldValueDto` types
+
 ## [1.5.1] - 2026-03-19
 
 ### Fixed

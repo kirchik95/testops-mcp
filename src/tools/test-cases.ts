@@ -307,21 +307,22 @@ export function registerTestCaseTools(server: McpServer, api: TestCasesApi, read
     server.registerTool(
       'set-test-case-custom-fields',
       {
-        description: 'Update custom field values for a test case. First use get-test-case-custom-fields to see available fields and their IDs. Each entry needs a customField.id and values with value IDs.',
+        description: 'Update custom field values for a test case. First use get-test-case-custom-fields to see available fields and their IDs. Automatically merges with existing values — only the specified fields are replaced, others are preserved.',
         inputSchema: z.object({
           id: z.number().describe('Test case ID'),
+          projectId: projectIdSchema,
           fields: z.array(z.object({
             customField: z.object({
               id: z.number().describe('Custom field ID'),
             }).describe('Custom field reference'),
-            values: z.array(z.object({
-              id: z.number().describe('Custom field value ID'),
-            })).describe('Values to set'),
-          })).describe('Custom field values to update'),
+            id: z.number().describe('Custom field value ID'),
+            name: z.string().optional().default('').describe('Value name (optional)'),
+          })).describe('Custom field values to set (flat format: customField.id + value id)'),
         }),
       },
       withErrorHandler(async (params) => {
-        await api.updateCustomFields(params.id, params.fields);
+        const projectId = resolveProjectId(params.projectId);
+        await api.updateCustomFields(params.id, projectId, params.fields);
         return { content: [{ type: 'text' as const, text: `Custom fields updated for test case #${params.id}.` }] };
       })
     );

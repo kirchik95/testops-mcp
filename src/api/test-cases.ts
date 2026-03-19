@@ -1,7 +1,7 @@
 import { HttpClient } from '../client/http-client.js';
 import {
   TestCase, TestCaseOverview, CreateTestCaseRequest, UpdateTestCaseRequest,
-  TestCaseScenario, IssueDto, MemberDto, CustomFieldWithValues, CustomFieldValueWithCf,
+  TestCaseScenario, IssueDto, MemberDto, CustomFieldValueWithCf,
   TestCaseRelationDto, RequirementDto, TestKeyDto, ExternalLink,
 } from '../types/api-types.js';
 import { PageResponse } from '../types/common.js';
@@ -67,8 +67,16 @@ export class TestCasesApi {
     return this.http.get<CustomFieldValueWithCf[]>(`/api/testcase/${testCaseId}/cfv`, { projectId });
   }
 
-  async updateCustomFields(testCaseId: number, fields: CustomFieldWithValues[]): Promise<void> {
-    return this.http.patch<void>(`/api/testcase/${testCaseId}/cfv`, fields);
+  async updateCustomFields(testCaseId: number, projectId: number, fields: CustomFieldValueWithCf[]): Promise<void> {
+    const current = await this.getCustomFields(testCaseId, projectId);
+    const merged = this.mergeCustomFields(current, fields);
+    return this.http.post<void>(`/api/testcase/${testCaseId}/cfv`, merged);
+  }
+
+  private mergeCustomFields(current: CustomFieldValueWithCf[], updates: CustomFieldValueWithCf[]): CustomFieldValueWithCf[] {
+    const updatedFieldIds = new Set(updates.map(u => u.customField?.id).filter(Boolean));
+    const kept = current.filter(c => !updatedFieldIds.has(c.customField?.id));
+    return [...kept, ...updates];
   }
 
   async getRelations(testCaseId: number): Promise<TestCaseRelationDto[]> {

@@ -279,21 +279,11 @@ export interface CustomFieldDto {
   locked?: boolean;
 }
 
-export interface CustomFieldValueDto {
-  id?: number;
-  name?: string;
-}
-
 export interface CustomFieldValueWithCf {
   id?: number;
   name?: string;
   customField?: CustomFieldDto;
   global?: boolean;
-}
-
-export interface CustomFieldWithValues {
-  customField?: CustomFieldDto;
-  values?: CustomFieldValueDto[];
 }
 
 export interface RequirementDto {
