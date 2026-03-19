@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-03-19
+
+### Fixed
+
+- **`get-test-case-custom-fields` showed `none` for all values** — API returns a flat array of `CustomFieldValueWithCf` (one entry per value), but `formatCustomFields` expected a grouped `CustomFieldWithValues` structure with a `values[]` array. Fixed the formatter to group by `customField.id` and display actual values. Output now includes `value.id` needed for `set-test-case-custom-fields`.
+
 ## [1.3.1] - 2026-03-19
 
 ### Added
