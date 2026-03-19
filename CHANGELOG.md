@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-03-19
+
+### Added
+
+- **Unit test suite (209 tests, Vitest)** — full coverage across all layers:
+  - `utils/` — 26 formatters + error handler (67 tests)
+  - `config` — env parsing, validation, `resolveProjectId` (11 tests)
+  - `client/` — `AuthManager` (OAuth, caching, race condition), `HttpClient` (retry, 204, URL building) (18 tests)
+  - `api/` — all 8 API classes with mocked `HttpClient` (57 tests)
+  - `tools/` — all 8 tool registration modules with mocked API + `McpServer` (56 tests)
+- **Pre-commit hook** — `scripts/pre-commit` runs `npm test` before every commit; auto-installed via `npm run prepare`
+- **Vitest configuration** — `vitest.config.ts` with v8 coverage, globals, node environment
+
 ## [1.4.0] - 2026-03-19
 
 ### Changed

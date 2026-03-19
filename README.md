@@ -185,7 +185,8 @@ src/
 │   ├── common.ts
 │   └── api-types.ts
 └── utils/
-    └── formatting.ts        # API response formatting for LLM readability
+    ├── formatting.ts        # API response formatting for LLM readability
+    └── error-handler.ts     # Tool error handling wrapper
 ```
 
 Three-layer design:
@@ -199,10 +200,21 @@ Three-layer design:
 ```bash
 git clone <repo-url>
 cd testops-mcp
-npm install
+npm install        # also installs pre-commit hook via "prepare" script
 npm run build
 npm start
 ```
+
+### Testing
+
+The project has 209 unit tests covering all layers (utils, config, client, API, tools).
+
+```bash
+npm test           # run all tests once
+npm run test:watch # run in watch mode
+```
+
+A pre-commit hook automatically runs the test suite before every commit. If any test fails, the commit is blocked.
 
 ## License
 
