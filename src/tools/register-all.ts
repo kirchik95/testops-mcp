@@ -8,6 +8,7 @@ import { LaunchesApi } from '../api/launches.js';
 import { TestResultsApi } from '../api/test-results.js';
 import { DefectsApi } from '../api/defects.js';
 import { AnalyticsApi } from '../api/analytics.js';
+import { ReferenceDataApi } from '../api/reference-data.js';
 import { registerProjectTools } from './projects.js';
 import { registerTestCaseTools } from './test-cases.js';
 import { registerTestPlanTools } from './test-plans.js';
@@ -15,6 +16,7 @@ import { registerLaunchTools } from './launches.js';
 import { registerTestResultTools } from './test-results.js';
 import { registerDefectTools } from './defects.js';
 import { registerAnalyticsTools } from './analytics.js';
+import { registerReferenceDataTools } from './reference-data.js';
 import { config } from '../config.js';
 
 export function registerAllTools(server: McpServer): void {
@@ -29,6 +31,7 @@ export function registerAllTools(server: McpServer): void {
   const testResultsApi = new TestResultsApi(http);
   const defectsApi = new DefectsApi(http);
   const analyticsApi = new AnalyticsApi(http);
+  const referenceDataApi = new ReferenceDataApi(http);
 
   registerProjectTools(server, projectsApi);
   registerTestCaseTools(server, testCasesApi, readOnly);
@@ -37,4 +40,5 @@ export function registerAllTools(server: McpServer): void {
   registerTestResultTools(server, testResultsApi, readOnly);
   registerDefectTools(server, defectsApi, readOnly);
   registerAnalyticsTools(server, analyticsApi);
+  registerReferenceDataTools(server, referenceDataApi);
 }

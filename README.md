@@ -147,6 +147,12 @@ Or with `npx` (no global install required):
 | `get-status-distribution` | Test status distribution |
 | `get-success-rate` | Test success rate |
 
+### Reference Data
+| Tool | Description |
+|---|---|
+| `list-test-layers` | List available test layers (UI, API, Unit, etc.) with IDs |
+| `list-workflows` | List workflows with their statuses and IDs |
+
 ## Architecture
 
 ```
@@ -163,7 +169,8 @@ src/
 │   ├── launches.ts
 │   ├── test-results.ts
 │   ├── defects.ts
-│   └── analytics.ts
+│   ├── analytics.ts
+│   └── reference-data.ts
 ├── tools/                   # MCP tool registration
 │   ├── register-all.ts
 │   ├── projects.ts
@@ -172,7 +179,8 @@ src/
 │   ├── launches.ts
 │   ├── test-results.ts
 │   ├── defects.ts
-│   └── analytics.ts
+│   ├── analytics.ts
+│   └── reference-data.ts
 ├── types/                   # TypeScript interfaces
 │   ├── common.ts
 │   └── api-types.ts

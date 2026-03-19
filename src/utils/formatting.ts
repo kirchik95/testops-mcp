@@ -4,6 +4,7 @@ import {
   TestCaseScenario, TestCaseStep, TestStatusCount,
   IssueDto, MemberDto, CustomFieldWithValues, CustomFieldValueWithCf,
   TestCaseRelationDto, RequirementDto, TestKeyDto, ExternalLink,
+  TestLayer, Workflow,
 } from '../types/api-types.js';
 import { PageResponse } from '../types/common.js';
 
@@ -332,6 +333,26 @@ export function formatSuccessRate(data: SuccessRatePoint[]): string {
   const lines = ['Success Rate Trend:\n'];
   for (const p of data) {
     lines.push(`  ${formatDate(p.date)}: ${p.avgSuccessRate.toFixed(1)}% (${p.testResultsCount} results / ${p.testCasesCount} cases)`);
+  }
+  return lines.join('\n');
+}
+
+export function formatTestLayers(data: PageResponse<TestLayer>): string {
+  if (data.content.length === 0) return 'No test layers found.';
+  const lines = [`${data.totalElements} test layer(s):\n`];
+  for (const l of data.content) {
+    lines.push(`  - [id: ${l.id}] ${l.name}`);
+  }
+  return lines.join('\n');
+}
+
+export function formatWorkflows(data: PageResponse<Workflow>): string {
+  if (data.content.length === 0) return 'No workflows found.';
+  const lines = [`${data.totalElements} workflow(s):\n`];
+  for (const w of data.content) {
+    const statuses = w.statuses?.map(s => `${s.name} (id: ${s.id})`).join(', ') || 'none';
+    lines.push(`  - [id: ${w.id}] ${w.name}`);
+    lines.push(`    Statuses: ${statuses}`);
   }
   return lines.join('\n');
 }

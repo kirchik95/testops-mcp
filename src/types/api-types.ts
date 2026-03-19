@@ -7,6 +7,23 @@ export interface Project {
   lastModifiedDate?: number;
 }
 
+// Test Layer
+export interface TestLayer {
+  id: number;
+  name: string;
+  createdDate?: number;
+  lastModifiedDate?: number;
+}
+
+// Workflow (with statuses)
+export interface Workflow {
+  id: number;
+  name: string;
+  statuses?: StatusRef[];
+  createdDate?: number;
+  lastModifiedDate?: number;
+}
+
 // Test Case (matches TestCaseDto from API)
 export interface TestCase {
   id: number;
