@@ -236,7 +236,8 @@ export function registerTestCaseTools(server: McpServer, api: TestCasesApi, read
           id: z.number().describe('Test case ID'),
           issues: z.array(z.object({
             name: z.string().describe('Issue key (e.g. DEV-33677)'),
-            url: z.string().optional().describe('Issue URL'),
+            url: z.string().describe('Full issue URL (e.g. https://tracker.yandex.ru/DEV-33677)'),
+            integrationId: z.number().describe('Integration ID for the issue tracker. Use get-test-case-issues to find the correct ID from existing links.'),
           })).describe('Issue links to set'),
         }),
       },

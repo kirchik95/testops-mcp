@@ -140,7 +140,7 @@ export function formatIssues(issues: IssueDto[]): string {
   if (issues.length === 0) return 'No issue links.';
   const lines = [`${issues.length} issue link(s):\n`];
   for (const i of issues) {
-    lines.push(`  - ${i.displayName || i.name || 'issue'}${i.url ? ` (${i.url})` : ''}${i.closed ? ' [closed]' : ''}`);
+    lines.push(`  - ${i.displayName || i.name || 'issue'}${i.url ? ` (${i.url})` : ''}${i.integrationId != null ? ` [integrationId: ${i.integrationId}]` : ''}${i.closed ? ' [closed]' : ''}`);
   }
   return lines.join('\n');
 }
