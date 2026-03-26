@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2026-03-26
+
+### Fixed
+
+- **`set-test-case-issues` linked unrelated issues** — without `integrationId` and `url`, TestOps could not identify the external tracker and pulled in all "similar" issues. Both fields are now required in the tool schema.
+
+### Changed
+
+- `get-test-case-issues` output now includes `integrationId` so users can discover the correct integration ID from existing links
+
 ## [1.5.2] - 2026-03-19
 
 ### Fixed
