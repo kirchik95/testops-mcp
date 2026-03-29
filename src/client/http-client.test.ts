@@ -8,6 +8,8 @@ const mockConfig = vi.hoisted(() => ({
   timeoutMs: 100,
   retryMax: 2,
   retryBaseMs: 1,
+  logLevel: 'error',
+  logFormat: 'json',
 }));
 
 vi.mock('../config.js', () => ({
@@ -34,6 +36,7 @@ describe('HttpClient', () => {
   let mockAuth: AuthManager;
   let client: HttpClient;
   let fetchMock: ReturnType<typeof vi.fn>;
+  let stderrWriteSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     mockAuth = createMockAuth();
@@ -44,6 +47,11 @@ describe('HttpClient', () => {
     mockConfig.timeoutMs = 100;
     mockConfig.retryMax = 2;
     mockConfig.retryBaseMs = 1;
+    stderrWriteSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  });
+
+  afterEach(() => {
+    stderrWriteSpy.mockRestore();
   });
 
   describe('GET', () => {

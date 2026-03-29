@@ -22,6 +22,17 @@ function parseBooleanEnv(name: string, defaultValue: boolean): boolean {
   throw new Error(`${name} must be either "true" or "false"`);
 }
 
+function parseEnumEnv<const T extends readonly string[]>(
+  name: string,
+  allowedValues: T,
+  defaultValue: T[number],
+): T[number] {
+  const raw = process.env[name]?.trim();
+  if (raw === undefined || raw === '') return defaultValue;
+  if (allowedValues.includes(raw)) return raw as T[number];
+  throw new Error(`${name} must be one of: ${allowedValues.join(', ')}`);
+}
+
 export const config = {
   testopsUrl: process.env.TESTOPS_URL?.trim() || '',
   testopsToken: process.env.TESTOPS_TOKEN?.trim() || '',
@@ -31,6 +42,8 @@ export const config = {
   timeoutMs: parseOptionalIntegerEnv('TESTOPS_TIMEOUT_MS', 1) ?? 30_000,
   retryMax: parseOptionalIntegerEnv('TESTOPS_RETRY_MAX', 0) ?? 2,
   retryBaseMs: parseOptionalIntegerEnv('TESTOPS_RETRY_BASE_MS', 1) ?? 250,
+  logLevel: parseEnumEnv('TESTOPS_LOG_LEVEL', ['error', 'info', 'debug'] as const, 'error'),
+  logFormat: parseEnumEnv('TESTOPS_LOG_FORMAT', ['json', 'pretty'] as const, 'json'),
 };
 
 export function resolveProjectId(argsProjectId: number | undefined): number {

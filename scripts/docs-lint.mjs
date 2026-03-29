@@ -40,6 +40,16 @@ async function main() {
     throw new Error('AGENTS.md must point readers to docs/index.md');
   }
 
+  const evalsContent = await readFile(path.join(repoRoot, 'docs/evals.md'), 'utf8');
+  if (!evalsContent.includes('npm run eval:matrix')) {
+    throw new Error('docs/evals.md must document npm run eval:matrix');
+  }
+
+  const reliabilityContent = await readFile(path.join(repoRoot, 'docs/reliability.md'), 'utf8');
+  if (!reliabilityContent.includes('TESTOPS_LOG_LEVEL') || !reliabilityContent.includes('TESTOPS_LOG_FORMAT')) {
+    throw new Error('docs/reliability.md must document TESTOPS_LOG_LEVEL and TESTOPS_LOG_FORMAT');
+  }
+
   console.log(`Documentation checks passed (${requiredFiles.length} files, AGENTS.md ${lineCount} lines).`);
 }
 

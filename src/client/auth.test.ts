@@ -5,6 +5,8 @@ vi.mock('../config.js', () => ({
     testopsUrl: 'https://testops.example.com',
     testopsToken: 'my-api-token',
     timeoutMs: 50,
+    logLevel: 'error',
+    logFormat: 'json',
   },
 }));
 
@@ -17,9 +19,15 @@ function mockFetchSuccess(accessToken = 'access-token-123', expiresIn = 3600) {
 
 describe('AuthManager', () => {
   let auth: AuthManager;
+  let stderrWriteSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     auth = new AuthManager();
+    stderrWriteSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  });
+
+  afterEach(() => {
+    stderrWriteSpy.mockRestore();
   });
 
   describe('fetchToken', () => {

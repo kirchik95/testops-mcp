@@ -1,4 +1,5 @@
 import { config } from '../config.js';
+import { createRequestId, logEvent } from '../utils/logger.js';
 
 interface TokenResponse {
   access_token: string;
@@ -28,12 +29,15 @@ export class AuthManager {
 
   async getAccessToken(): Promise<string> {
     if (this.accessToken && Date.now() < this.tokenExpiresAt) {
+      logEvent('debug', 'auth.cache_hit');
       return this.accessToken;
     }
     if (!this.pendingToken) {
       this.pendingToken = this.fetchToken().finally(() => {
         this.pendingToken = null;
       });
+    } else {
+      logEvent('debug', 'auth.await_pending');
     }
     return this.pendingToken;
   }
@@ -44,15 +48,21 @@ export class AuthManager {
   }
 
   private async fetchToken(): Promise<string> {
+    const authRequestId = createRequestId('auth');
     const url = `${config.testopsUrl}/api/uaa/oauth/token`;
     const body = new URLSearchParams({
       grant_type: 'apitoken',
       scope: 'openid',
       token: config.testopsToken,
     });
+    const startedAt = Date.now();
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
+    logEvent('debug', 'auth.fetch.start', {
+      authRequestId,
+      path: '/api/uaa/oauth/token',
+    });
 
     let response: Response;
     try {
@@ -63,9 +73,19 @@ export class AuthManager {
         signal: controller.signal,
       });
     } catch (error) {
+      const durationMs = Date.now() - startedAt;
       if (isAbortError(error)) {
+        logEvent('error', 'auth.fetch.timeout', {
+          authRequestId,
+          durationMs,
+        });
         throw new Error(`Auth request timed out after ${config.timeoutMs}ms`, { cause: error });
       }
+      logEvent('error', 'auth.fetch.failed', {
+        authRequestId,
+        durationMs,
+        error,
+      });
       throw new Error(`Auth request failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     } finally {
       clearTimeout(timeout);
@@ -73,6 +93,12 @@ export class AuthManager {
 
     if (!response.ok) {
       const text = await readErrorText(response);
+      logEvent('error', 'auth.fetch.rejected', {
+        authRequestId,
+        durationMs: Date.now() - startedAt,
+        status: response.status,
+        message: text,
+      });
       throw new Error(`Auth failed (${response.status}): ${text}`);
     }
 
@@ -94,6 +120,11 @@ export class AuthManager {
     this.accessToken = data.access_token;
     const expiresIn = data.expires_in ?? 3600;
     this.tokenExpiresAt = Date.now() + (expiresIn - 300) * 1000;
+    logEvent('info', 'auth.fetch.success', {
+      authRequestId,
+      durationMs: Date.now() - startedAt,
+      expiresIn,
+    });
     return this.accessToken;
   }
 }

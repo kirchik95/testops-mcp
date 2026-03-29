@@ -97,16 +97,22 @@ describe('config module', () => {
       expect(config.timeoutMs).toBe(30_000);
       expect(config.retryMax).toBe(2);
       expect(config.retryBaseMs).toBe(250);
+      expect(config.logLevel).toBe('error');
+      expect(config.logFormat).toBe('json');
     });
 
     it('parses timeout and retry env vars', async () => {
       vi.stubEnv('TESTOPS_TIMEOUT_MS', '1500');
       vi.stubEnv('TESTOPS_RETRY_MAX', '4');
       vi.stubEnv('TESTOPS_RETRY_BASE_MS', '75');
+      vi.stubEnv('TESTOPS_LOG_LEVEL', 'debug');
+      vi.stubEnv('TESTOPS_LOG_FORMAT', 'pretty');
       const { config } = await loadConfig();
       expect(config.timeoutMs).toBe(1500);
       expect(config.retryMax).toBe(4);
       expect(config.retryBaseMs).toBe(75);
+      expect(config.logLevel).toBe('debug');
+      expect(config.logFormat).toBe('pretty');
     });
 
     it('leaves projectId undefined when env var is not set', async () => {
@@ -122,6 +128,16 @@ describe('config module', () => {
     it('throws on invalid boolean env vars during module load', async () => {
       vi.stubEnv('TESTOPS_READ_ONLY', 'yes');
       await expect(loadConfig()).rejects.toThrow('TESTOPS_READ_ONLY must be either "true" or "false"');
+    });
+
+    it('throws on invalid log level env vars during module load', async () => {
+      vi.stubEnv('TESTOPS_LOG_LEVEL', 'verbose');
+      await expect(loadConfig()).rejects.toThrow('TESTOPS_LOG_LEVEL must be one of: error, info, debug');
+    });
+
+    it('throws on invalid log format env vars during module load', async () => {
+      vi.stubEnv('TESTOPS_LOG_FORMAT', 'yaml');
+      await expect(loadConfig()).rejects.toThrow('TESTOPS_LOG_FORMAT must be one of: json, pretty');
     });
   });
 });

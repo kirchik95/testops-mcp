@@ -23,7 +23,8 @@ Key documents:
 - Route all network access through `src/client/auth.ts` and `src/client/http-client.ts`.
 - Keep write-tool registration behind `if (!readOnly)`.
 - Treat repo docs as the durable record; if behavior changes, update docs and checks together.
-- Prefer `npm run check` for local validation and `npm run eval:smoke` for end-to-end verification.
+- Prefer `npm run check` for local validation, `npm run eval:smoke` for fast end-to-end health, and `npm run eval:matrix` for broad tool coverage.
+- Use `TESTOPS_LOG_LEVEL` and `TESTOPS_LOG_FORMAT` when you need runtime diagnostics; logs must stay on stderr only.
 
 ## Fast Path
 
@@ -32,3 +33,4 @@ Key documents:
 3. Make changes.
 4. Run `npm run check`.
 5. Run `npm run eval:smoke` when behavior touches startup, auth, transport, or tool wiring.
+6. Run `npm run eval:matrix` when behavior touches fake backend coverage, logging, or any tool-group contract.

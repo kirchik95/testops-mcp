@@ -2,12 +2,13 @@
 
 ## Purpose
 
-The smoke harness validates the built MCP server end-to-end against a local fake TestOps backend.
+The local eval harness validates the built MCP server end-to-end against a fake TestOps backend.
 
 ## Commands
 
 - `npm run check`
 - `npm run eval:smoke`
+- `npm run eval:matrix`
 
 ## What Smoke Eval Covers
 
@@ -21,15 +22,27 @@ The smoke harness validates the built MCP server end-to-end against a local fake
 - readable 5xx failure surfaces
 - readable timeout failure surfaces
 
+## What Matrix Eval Covers
+
+- representative happy-path coverage for all tool groups
+- representative write flows for test cases, test plans, test results, and defects
+- analytics and reference-data reads
+- read-only mode removing write tools across all write-capable groups
+- structured stderr logging scenarios for `error`, `info`, and `debug`
+
 ## How It Works
 
 `scripts/fake-testops-server.mjs`
-- starts a local HTTP server with deterministic auth and minimal TestOps endpoints
+- re-exports the local fake backend used by eval scripts
 
 `scripts/eval-smoke.mjs`
-- builds a real MCP client/server loop over stdio
-- points the server at the fake backend through env vars
-- runs assertions on tool registration and tool results
+- runs the fast startup/auth/transport health checks
+
+`scripts/eval-matrix.mjs`
+- runs the broader tool-group matrix and logging assertions
+
+`scripts/eval-support/`
+- holds the shared fake backend handlers, fixtures, and MCP client/server harness helpers
 
 ## When To Run
 
@@ -39,5 +52,11 @@ Run smoke eval whenever a change touches:
 - HTTP transport
 - tool registration
 - read-only gating
+
+Run matrix eval whenever a change touches:
+- fake backend fixtures or route handlers
+- tool contracts across any domain group
+- structured logging or stderr diagnostics
+- docs that describe eval coverage or runtime diagnostics
 
 Pure formatting or documentation-only changes normally only need `npm run check`.

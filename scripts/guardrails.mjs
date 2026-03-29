@@ -7,6 +7,9 @@ const allowedFetchFiles = new Set([
   path.join(srcRoot, 'client', 'auth.ts'),
   path.join(srcRoot, 'client', 'http-client.ts'),
 ]);
+const allowedConsoleFiles = new Set([
+  path.join(srcRoot, 'utils', 'logger.ts'),
+]);
 const writeToolGuards = new Map([
   ['src/tools/test-cases.ts', [
     'create-test-case',
@@ -121,6 +124,10 @@ async function main() {
 
     if (source.includes('fetch(') && !allowedFetchFiles.has(absolutePath)) {
       violations.push(`${relativePath}: direct fetch() is only allowed in src/client/auth.ts and src/client/http-client.ts`);
+    }
+
+    if (source.includes('console.') && !allowedConsoleFiles.has(absolutePath)) {
+      violations.push(`${relativePath}: direct console.* usage is forbidden in src runtime code outside src/utils/logger.ts`);
     }
 
     if (relativePath.startsWith('src/api/') || relativePath.startsWith('src/client/')) {

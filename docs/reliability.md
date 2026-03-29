@@ -16,6 +16,8 @@ Optional runtime env vars:
 - `TESTOPS_TIMEOUT_MS`
 - `TESTOPS_RETRY_MAX`
 - `TESTOPS_RETRY_BASE_MS`
+- `TESTOPS_LOG_LEVEL`
+- `TESTOPS_LOG_FORMAT`
 
 ## Transport Rules
 
@@ -32,6 +34,16 @@ Optional runtime env vars:
 - retries only safe read requests on transient network or 5xx-style failures
 - caps error-body reads before including them in thrown errors
 - must throw readable errors for invalid JSON payloads
+
+## Diagnostic Logging Rules
+
+- runtime diagnostics must go to stderr only
+- stdout remains reserved for MCP transport
+- default logging stays quiet: `TESTOPS_LOG_LEVEL=error`, `TESTOPS_LOG_FORMAT=json`
+- `info` should emit request/tool/server summaries
+- `debug` should emit auth fetch, retry, timeout, and auth-refresh detail
+- logs must include stable fields such as `event`, `toolName`, `toolRequestId`, `requestId`, `method`, `path`, `status`, `attempt`, and `durationMs` when relevant
+- logs must never include raw API tokens, bearer tokens, or authorization headers
 
 ## API Layer Rules
 
@@ -50,3 +62,4 @@ Optional runtime env vars:
 Use:
 - `npm run check` for unit + structural validation
 - `npm run eval:smoke` for end-to-end startup/auth/tool wiring checks against the fake backend
+- `npm run eval:matrix` for broad tool-group and logging verification against the fake backend

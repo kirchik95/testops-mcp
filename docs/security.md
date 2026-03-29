@@ -5,6 +5,7 @@
 - `TESTOPS_TOKEN` is sensitive and must never be logged or written into docs
 - bearer tokens fetched from TestOps are runtime-only credentials and must not be persisted
 - error messages should describe failures without echoing secrets back to the user
+- structured stderr logs must redact token-like fields and never include authorization data
 
 ## Network Boundary
 
@@ -25,4 +26,4 @@
 
 ## Local Evaluation
 
-The fake backend used by smoke eval is intentionally local and deterministic. It should never require real TestOps credentials.
+The fake backend used by `eval:smoke` and `eval:matrix` is intentionally local and deterministic. It should never require real TestOps credentials.

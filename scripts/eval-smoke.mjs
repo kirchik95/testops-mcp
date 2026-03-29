@@ -1,98 +1,11 @@
-import { spawn } from 'node:child_process';
-import path from 'node:path';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { startFakeTestOpsServer } from './fake-testops-server.mjs';
-
-const repoRoot = process.cwd();
-const serverEntry = path.join(repoRoot, 'build', 'index.js');
-
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
-
-function extractText(result) {
-  if (!result.content || result.content.length === 0) return '';
-  return result.content
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join('\n');
-}
-
-function buildEnv(overrides) {
-  const env = {
-    ...process.env,
-    ...Object.fromEntries(
-      Object.entries(overrides)
-        .filter(([, value]) => value !== undefined)
-        .map(([key, value]) => [key, String(value)])
-    ),
-  };
-
-  return Object.fromEntries(
-    Object.entries(env).filter(([, value]) => value !== undefined)
-  );
-}
-
-async function withClient(envOverrides, fn) {
-  const transport = new StdioClientTransport({
-    command: 'node',
-    args: [serverEntry],
-    cwd: repoRoot,
-    env: buildEnv(envOverrides),
-    stderr: 'pipe',
-  });
-  const stderrChunks = [];
-
-  if (transport.stderr) {
-    transport.stderr.on('data', (chunk) => {
-      stderrChunks.push(String(chunk));
-    });
-  }
-
-  const client = new Client({ name: 'smoke-eval', version: '1.0.0' }, { capabilities: {} });
-
-  try {
-    await client.connect(transport);
-    return await fn(client, stderrChunks);
-  } finally {
-    await client.close();
-  }
-}
-
-async function expectStartupFailure() {
-  await new Promise((resolve, reject) => {
-    const child = spawn('node', [serverEntry], {
-      cwd: repoRoot,
-      env: buildEnv({
-        TESTOPS_URL: 'not-a-url',
-        TESTOPS_TOKEN: 'fake-api-token',
-      }),
-      stdio: ['ignore', 'ignore', 'pipe'],
-    });
-    let stderr = '';
-
-    child.stderr.on('data', (chunk) => {
-      stderr += String(chunk);
-    });
-
-    child.on('error', reject);
-    child.on('exit', (code) => {
-      try {
-        assert(code === 1, `Expected invalid-config startup to exit with code 1, got ${code}`);
-        assert(stderr.includes('TESTOPS_URL must be a valid http(s) URL'), 'Startup failure must report invalid TESTOPS_URL');
-        resolve();
-      } catch (error) {
-        reject(error);
-      }
-    });
-  });
-}
+import { assert, expectStartupFailure, extractText, withClient } from './eval-support/mcp-harness.mjs';
 
 async function main() {
-  await expectStartupFailure();
+  await expectStartupFailure({
+    TESTOPS_URL: 'not-a-url',
+    TESTOPS_TOKEN: 'fake-api-token',
+  }, 'TESTOPS_URL must be a valid http(s) URL');
 
   const happyServer = await startFakeTestOpsServer({
     authTokens: ['expired-token', 'fresh-token'],

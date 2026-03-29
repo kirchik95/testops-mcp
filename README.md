@@ -74,6 +74,8 @@ Or with `npx` (no global install required):
 | `TESTOPS_TIMEOUT_MS` | No | Request timeout in milliseconds for auth and API calls (default: `30000`) |
 | `TESTOPS_RETRY_MAX` | No | Retry count for transient read-request failures (default: `2`) |
 | `TESTOPS_RETRY_BASE_MS` | No | Base backoff delay in milliseconds for transient read-request retries (default: `250`) |
+| `TESTOPS_LOG_LEVEL` | No | Runtime stderr log level: `error`, `info`, or `debug` (default: `error`) |
+| `TESTOPS_LOG_FORMAT` | No | Runtime stderr log format: `json` or `pretty` (default: `json`) |
 
 ## Available Tools
 
@@ -217,9 +219,21 @@ npm test           # run all tests once
 npm run test:watch # run in watch mode
 npm run check      # lint + unit tests + build + docs/guardrail checks
 npm run eval:smoke # run end-to-end smoke eval against a fake local TestOps backend
+npm run eval:matrix # run full local eval matrix across all tool groups and logging modes
 ```
 
 A pre-commit hook automatically runs the test suite before every commit. If any test fails, the commit is blocked.
+
+### Diagnostics
+
+Runtime diagnostics are emitted to stderr only so they do not interfere with MCP stdout transport.
+
+Examples:
+
+```bash
+TESTOPS_LOG_LEVEL=info TESTOPS_LOG_FORMAT=json testops-mcp
+TESTOPS_LOG_LEVEL=debug TESTOPS_LOG_FORMAT=pretty testops-mcp
+```
 
 ### Repo Knowledge Base
 

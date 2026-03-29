@@ -18,8 +18,10 @@ import { registerDefectTools } from './defects.js';
 import { registerAnalyticsTools } from './analytics.js';
 import { registerReferenceDataTools } from './reference-data.js';
 import { config } from '../config.js';
+import { createLoggedServer } from '../utils/tool-execution.js';
 
 export function registerAllTools(server: McpServer): void {
+  const loggedServer = createLoggedServer(server);
   const auth = new AuthManager();
   const http = new HttpClient(auth);
   const readOnly = config.readOnly;
@@ -33,12 +35,12 @@ export function registerAllTools(server: McpServer): void {
   const analyticsApi = new AnalyticsApi(http);
   const referenceDataApi = new ReferenceDataApi(http);
 
-  registerProjectTools(server, projectsApi);
-  registerTestCaseTools(server, testCasesApi, readOnly);
-  registerTestPlanTools(server, testPlansApi, readOnly);
-  registerLaunchTools(server, launchesApi);
-  registerTestResultTools(server, testResultsApi, readOnly);
-  registerDefectTools(server, defectsApi, readOnly);
-  registerAnalyticsTools(server, analyticsApi);
-  registerReferenceDataTools(server, referenceDataApi);
+  registerProjectTools(loggedServer, projectsApi);
+  registerTestCaseTools(loggedServer, testCasesApi, readOnly);
+  registerTestPlanTools(loggedServer, testPlansApi, readOnly);
+  registerLaunchTools(loggedServer, launchesApi);
+  registerTestResultTools(loggedServer, testResultsApi, readOnly);
+  registerDefectTools(loggedServer, defectsApi, readOnly);
+  registerAnalyticsTools(loggedServer, analyticsApi);
+  registerReferenceDataTools(loggedServer, referenceDataApi);
 }

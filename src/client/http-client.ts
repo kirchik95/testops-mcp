@@ -1,5 +1,6 @@
 import { config } from '../config.js';
 import { AuthManager } from './auth.js';
+import { createRequestId, logEvent } from '../utils/logger.js';
 
 function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError';
@@ -86,6 +87,16 @@ export class HttpClient {
 
   private async request<T>(url: string, init: RequestInit, authRetried = false, attempt = 0): Promise<T> {
     const method = (init.method ?? 'GET').toUpperCase();
+    const requestId = createRequestId('http');
+    const parsedUrl = new URL(url);
+    const path = `${parsedUrl.pathname}${parsedUrl.search}`;
+    const startedAt = Date.now();
+    logEvent('debug', 'http.request.start', {
+      requestId,
+      method,
+      path,
+      attempt,
+    });
     const token = await this.auth.getAccessToken();
     const headers = new Headers(init.headers);
     headers.set('Authorization', `Bearer ${token}`);
@@ -100,14 +111,37 @@ export class HttpClient {
       clearTimeout(timeout);
 
       if (shouldRetry(method, attempt)) {
+        logEvent('info', 'http.request.retry', {
+          requestId,
+          method,
+          path,
+          attempt,
+          reason: 'network',
+          delayMs: getRetryDelay(attempt),
+        });
         await sleep(getRetryDelay(attempt));
         return this.request<T>(url, init, authRetried, attempt + 1);
       }
 
       if (isAbortError(error)) {
+        logEvent('error', 'http.request.timeout', {
+          requestId,
+          method,
+          path,
+          attempt,
+          durationMs: Date.now() - startedAt,
+        });
         throw new Error(`Request timed out after ${config.timeoutMs}ms for ${method} ${url}`, { cause: error });
       }
 
+      logEvent('error', 'http.request.failed', {
+        requestId,
+        method,
+        path,
+        attempt,
+        durationMs: Date.now() - startedAt,
+        error,
+      });
       throw new Error(`Network error ${method} ${url}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
 
@@ -115,26 +149,76 @@ export class HttpClient {
 
     if (response.status === 401 && !authRetried) {
       this.auth.invalidate();
+      logEvent('info', 'http.auth.refresh', {
+        requestId,
+        method,
+        path,
+        status: response.status,
+      });
       return this.request<T>(url, init, true, attempt);
     }
 
     if (!response.ok) {
       if (shouldRetry(method, attempt) && shouldRetryStatus(response.status)) {
+        logEvent('info', 'http.request.retry', {
+          requestId,
+          method,
+          path,
+          attempt,
+          status: response.status,
+          reason: 'status',
+          delayMs: getRetryDelay(attempt),
+        });
         await sleep(getRetryDelay(attempt));
         return this.request<T>(url, init, authRetried, attempt + 1);
       }
 
       const text = await readErrorText(response);
+      logEvent('error', 'http.request.rejected', {
+        requestId,
+        method,
+        path,
+        attempt,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+        message: text,
+      });
       throw new Error(`API error ${response.status} ${method} ${url}: ${text}`);
     }
 
     if (response.status === 204) {
+      logEvent('info', 'http.request.success', {
+        requestId,
+        method,
+        path,
+        attempt,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+      });
       return undefined as T;
     }
 
     try {
-      return (await response.json()) as T;
+      const data = (await response.json()) as T;
+      logEvent('info', 'http.request.success', {
+        requestId,
+        method,
+        path,
+        attempt,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+      });
+      return data;
     } catch (error) {
+      logEvent('error', 'http.request.invalid_json', {
+        requestId,
+        method,
+        path,
+        attempt,
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+        error,
+      });
       throw new Error(`Invalid JSON response for ${method} ${url}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
     }
   }
