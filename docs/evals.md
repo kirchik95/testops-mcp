@@ -10,6 +10,16 @@ The local eval harness validates the built MCP server end-to-end against a fake 
 - `npm run eval:smoke`
 - `npm run eval:matrix`
 
+## CI Execution
+
+GitHub Actions mirrors the local contract:
+
+- `check` runs on Node 18 and Node 22
+- `eval:smoke` runs on Node 22
+- `eval:matrix` runs on Node 22
+
+CI should not introduce separate validation logic. The workflow must call the same repo scripts that developers and agents use locally.
+
 ## What Smoke Eval Covers
 
 - startup failure on invalid config

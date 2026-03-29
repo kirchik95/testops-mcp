@@ -224,6 +224,16 @@ npm run eval:matrix # run full local eval matrix across all tool groups and logg
 
 A pre-commit hook automatically runs the test suite before every commit. If any test fails, the commit is blocked.
 
+### CI
+
+GitHub Actions runs on every push to `main` and on every pull request.
+
+- `check` runs on Node 18 and Node 22
+- `eval:smoke` runs on Node 22
+- `eval:matrix` runs on Node 22
+
+The workflow file lives at `.github/workflows/ci.yml`.
+
 ### Diagnostics
 
 Runtime diagnostics are emitted to stderr only so they do not interfere with MCP stdout transport.

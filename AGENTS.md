@@ -25,6 +25,7 @@ Key documents:
 - Treat repo docs as the durable record; if behavior changes, update docs and checks together.
 - Prefer `npm run check` for local validation, `npm run eval:smoke` for fast end-to-end health, and `npm run eval:matrix` for broad tool coverage.
 - Use `TESTOPS_LOG_LEVEL` and `TESTOPS_LOG_FORMAT` when you need runtime diagnostics; logs must stay on stderr only.
+- GitHub Actions must call the same repo scripts; do not create a separate CI-only validation path.
 
 ## Fast Path
 
