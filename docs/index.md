@@ -7,8 +7,9 @@ Read in this order:
 2. [reliability.md](reliability.md) for transport and failure-handling rules
 3. [security.md](security.md) for token handling, read-only behavior, and safety constraints
 4. [logging.md](logging.md) for stderr diagnostics and user-facing debugging guidance
-5. [evals.md](evals.md) for smoke-eval and local verification workflows
-6. [plans/agent-first-foundation.md](plans/agent-first-foundation.md) for the current harness-engineering migration
+5. [runbooks.md](runbooks.md) for incident triage and failure investigation
+6. [evals.md](evals.md) for smoke-eval and local verification workflows
+7. [plans/agent-first-foundation.md](plans/agent-first-foundation.md) for the current harness-engineering migration
 
 Temporary analysis artifacts:
 - `ANALYSIS_REPORT.md`

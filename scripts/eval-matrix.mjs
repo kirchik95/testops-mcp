@@ -127,6 +127,16 @@ async function runReadOnlyMatrix(baseUrl) {
   });
 }
 
+function requireField(entry, fieldName, message) {
+  assert(fieldName in entry, message);
+}
+
+function requireEvent(entries, eventName, message) {
+  const entry = entries.find((candidate) => candidate.event === eventName);
+  assert(Boolean(entry), message);
+  return entry;
+}
+
 async function runLoggingMatrix(baseUrl) {
   const infoRun = await withClient({
     TESTOPS_URL: baseUrl,
@@ -139,9 +149,25 @@ async function runLoggingMatrix(baseUrl) {
   });
 
   const infoEntries = parseJsonStderr(infoRun.stderr);
-  assert(infoEntries.some((entry) => entry.event === 'server.starting'), 'info logs must include server.starting');
-  assert(infoEntries.some((entry) => entry.event === 'tool.start'), 'info logs must include tool.start');
-  assert(infoEntries.some((entry) => entry.event === 'http.request.success'), 'info logs must include http.request.success');
+  const serverStarting = requireEvent(infoEntries, 'server.starting', 'info logs must include server.starting');
+  const toolStart = requireEvent(infoEntries, 'tool.start', 'info logs must include tool.start');
+  const httpSuccess = requireEvent(infoEntries, 'http.request.success', 'info logs must include http.request.success');
+  const toolSuccess = requireEvent(infoEntries, 'tool.success', 'info logs must include tool.success');
+
+  requireField(serverStarting, 'ts', 'server.starting must include ts');
+  requireField(serverStarting, 'level', 'server.starting must include level');
+  requireField(toolStart, 'toolName', 'tool.start must include toolName');
+  requireField(toolStart, 'toolRequestId', 'tool.start must include toolRequestId');
+  requireField(httpSuccess, 'requestId', 'http.request.success must include requestId');
+  requireField(httpSuccess, 'method', 'http.request.success must include method');
+  requireField(httpSuccess, 'path', 'http.request.success must include path');
+  requireField(httpSuccess, 'status', 'http.request.success must include status');
+  requireField(httpSuccess, 'durationMs', 'http.request.success must include durationMs');
+  requireField(httpSuccess, 'toolRequestId', 'http.request.success must include toolRequestId');
+  requireField(toolSuccess, 'durationMs', 'tool.success must include durationMs');
+
+  assert(toolStart.toolRequestId === httpSuccess.toolRequestId, 'tool and http success events must share toolRequestId');
+  assert(toolStart.toolRequestId === toolSuccess.toolRequestId, 'tool start and success must share toolRequestId');
   assertSecretsAbsent(infoRun.stderr, ['fake-api-token', 'stable-token']);
 
   const debugServer = await startFakeTestOpsServer({
@@ -162,6 +188,8 @@ async function runLoggingMatrix(baseUrl) {
     assert(debugRun.stderr.includes('http.request.start'), 'debug logs must include http.request.start');
     assert(debugRun.stderr.includes('http.auth.refresh'), 'debug logs must include auth refresh details');
     assert(debugRun.stderr.includes('auth.fetch.success'), 'debug logs must include auth success details');
+    assert(debugRun.stderr.includes('toolRequestId='), 'debug logs must include toolRequestId');
+    assert(debugRun.stderr.includes('requestId='), 'debug logs must include requestId');
     assertSecretsAbsent(debugRun.stderr, ['fake-api-token', 'expired-token', 'fresh-token']);
   } finally {
     await debugServer.stop();
@@ -185,7 +213,14 @@ async function runLoggingMatrix(baseUrl) {
 
     const errorEntries = parseJsonStderr(errorRun.stderr);
     assert(errorEntries.every((entry) => entry.level === 'error'), 'error-level logs must only contain error entries');
-    assert(errorEntries.some((entry) => entry.event === 'tool.error'), 'error-level logs must include tool.error');
+    const httpRejected = requireEvent(errorEntries, 'http.request.rejected', 'error-level logs must include http.request.rejected');
+    const toolError = requireEvent(errorEntries, 'tool.error', 'error-level logs must include tool.error');
+    requireField(httpRejected, 'requestId', 'http.request.rejected must include requestId');
+    requireField(httpRejected, 'status', 'http.request.rejected must include status');
+    requireField(httpRejected, 'toolRequestId', 'http.request.rejected must include toolRequestId');
+    requireField(toolError, 'toolRequestId', 'tool.error must include toolRequestId');
+    requireField(toolError, 'durationMs', 'tool.error must include durationMs');
+    assert(httpRejected.toolRequestId === toolError.toolRequestId, 'http.request.rejected and tool.error must share toolRequestId');
     assertSecretsAbsent(errorRun.stderr, ['fake-api-token', 'stable-token']);
   } finally {
     await errorServer.stop();

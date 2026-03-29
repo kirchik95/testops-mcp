@@ -258,6 +258,7 @@ Agent-facing repository guidance lives in:
 - `docs/reliability.md`
 - `docs/security.md`
 - `docs/logging.md`
+- `docs/runbooks.md`
 - `docs/evals.md`
 
 ## License

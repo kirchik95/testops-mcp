@@ -15,6 +15,7 @@ Key documents:
 - [docs/reliability.md](docs/reliability.md)
 - [docs/security.md](docs/security.md)
 - [docs/logging.md](docs/logging.md)
+- [docs/runbooks.md](docs/runbooks.md)
 - [docs/evals.md](docs/evals.md)
 - [docs/plans/agent-first-foundation.md](docs/plans/agent-first-foundation.md)
 
