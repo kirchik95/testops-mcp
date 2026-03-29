@@ -8,6 +8,7 @@ const requiredFiles = [
   'docs/architecture.md',
   'docs/reliability.md',
   'docs/security.md',
+  'docs/logging.md',
   'docs/evals.md',
   'docs/plans/agent-first-foundation.md',
 ];

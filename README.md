@@ -245,6 +245,8 @@ TESTOPS_LOG_LEVEL=info TESTOPS_LOG_FORMAT=json testops-mcp
 TESTOPS_LOG_LEVEL=debug TESTOPS_LOG_FORMAT=pretty testops-mcp
 ```
 
+If the MCP client does not surface subprocess stderr clearly, reproduce the same server config in a terminal and inspect the logs there. Detailed guidance lives in `docs/logging.md`.
+
 ### Repo Knowledge Base
 
 Agent-facing repository guidance lives in:
@@ -254,6 +256,7 @@ Agent-facing repository guidance lives in:
 - `docs/architecture.md`
 - `docs/reliability.md`
 - `docs/security.md`
+- `docs/logging.md`
 - `docs/evals.md`
 
 ## License

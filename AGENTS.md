@@ -14,6 +14,7 @@ Key documents:
 - [docs/architecture.md](docs/architecture.md)
 - [docs/reliability.md](docs/reliability.md)
 - [docs/security.md](docs/security.md)
+- [docs/logging.md](docs/logging.md)
 - [docs/evals.md](docs/evals.md)
 - [docs/plans/agent-first-foundation.md](docs/plans/agent-first-foundation.md)
 
