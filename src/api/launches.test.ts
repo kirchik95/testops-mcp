@@ -65,15 +65,14 @@ describe('LaunchesApi', () => {
       expect(result).toBe(expected)
     })
 
-    it('returns empty array when http.get throws', async () => {
+    it('propagates errors instead of silently swallowing them', async () => {
       const http = createMockHttp()
       vi.mocked(http.get).mockRejectedValue(new Error('API error 500'))
 
       const api = new LaunchesApi(http)
-      const result = await api.getStatistic(15)
 
+      await expect(api.getStatistic(15)).rejects.toThrow('API error 500')
       expect(http.get).toHaveBeenCalledWith('/api/launch/15/statistic')
-      expect(result).toEqual([])
     })
   })
 

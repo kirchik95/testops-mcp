@@ -6,6 +6,21 @@ interface TokenResponse {
   expires_in?: number;
 }
 
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
+}
+
+async function readErrorText(response: Response): Promise<string> {
+  try {
+    const text = await response.text();
+    if (!text) return '[empty response body]';
+    return text.length > 1000 ? `${text.slice(0, 1000)}…` : text;
+  } catch {
+    // guardrails:allow-lossy-catch
+    return '[unable to read response body]';
+  }
+}
+
 export class AuthManager {
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
@@ -36,18 +51,46 @@ export class AuthManager {
       token: config.testopsToken,
     });
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (isAbortError(error)) {
+        throw new Error(`Auth request timed out after ${config.timeoutMs}ms`, { cause: error });
+      }
+      throw new Error(`Auth request failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
-      const text = await response.text();
+      const text = await readErrorText(response);
       throw new Error(`Auth failed (${response.status}): ${text}`);
     }
 
-    const data = (await response.json()) as TokenResponse;
+    let data: TokenResponse;
+    try {
+      data = (await response.json()) as TokenResponse;
+    } catch (error) {
+      throw new Error(`Auth response was not valid JSON: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    }
+
+    if (!data.access_token || typeof data.access_token !== 'string') {
+      throw new Error('Auth response missing a valid access_token');
+    }
+
+    if (data.expires_in !== undefined && (!Number.isFinite(data.expires_in) || data.expires_in <= 0)) {
+      throw new Error('Auth response has an invalid expires_in value');
+    }
+
     this.accessToken = data.access_token;
     const expiresIn = data.expires_in ?? 3600;
     this.tokenExpiresAt = Date.now() + (expiresIn - 300) * 1000;

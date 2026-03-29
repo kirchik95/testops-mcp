@@ -74,8 +74,18 @@ export class TestCasesApi {
   }
 
   private mergeCustomFields(current: CustomFieldValueWithCf[], updates: CustomFieldValueWithCf[]): CustomFieldValueWithCf[] {
-    const updatedFieldIds = new Set(updates.map(u => u.customField?.id).filter(Boolean));
-    const kept = current.filter(c => !updatedFieldIds.has(c.customField?.id));
+    const updatedFieldIds = new Set(
+      updates
+        .map((update) => update.customField?.id)
+        .filter((id): id is number => id !== undefined && id !== null)
+    );
+
+    const kept = current.filter((field) => {
+      const fieldId = field.customField?.id;
+      if (fieldId === undefined || fieldId === null) return true;
+      return !updatedFieldIds.has(fieldId);
+    });
+
     return [...kept, ...updates];
   }
 

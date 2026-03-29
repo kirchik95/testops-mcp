@@ -5,6 +5,9 @@ const mockConfig = vi.hoisted(() => ({
   testopsUrl: 'https://testops.example.com',
   testopsToken: 'tok',
   pageSize: undefined as number | undefined,
+  timeoutMs: 100,
+  retryMax: 2,
+  retryBaseMs: 1,
 }));
 
 vi.mock('../config.js', () => ({
@@ -38,6 +41,9 @@ describe('HttpClient', () => {
     fetchMock = vi.fn().mockResolvedValue(jsonResponse({ result: 'ok' }));
     global.fetch = fetchMock as typeof fetch;
     mockConfig.pageSize = undefined;
+    mockConfig.timeoutMs = 100;
+    mockConfig.retryMax = 2;
+    mockConfig.retryBaseMs = 1;
   });
 
   describe('GET', () => {
@@ -177,6 +183,64 @@ describe('HttpClient', () => {
 
       await expect(client.get('/api/items')).rejects.toThrow(
         'API error 500 GET https://testops.example.com/api/items: Internal Server Error',
+      );
+    });
+
+    it('retries retriable GET responses before failing', async () => {
+      fetchMock
+        .mockResolvedValueOnce({ ok: false, status: 503, text: async () => 'Service Unavailable' })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ result: 'recovered' }) });
+      global.fetch = fetchMock as typeof fetch;
+
+      await expect(client.get('/api/items')).resolves.toEqual({ result: 'recovered' });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not retry non-GET requests on 5xx responses', async () => {
+      fetchMock.mockResolvedValue({
+        ok: false,
+        status: 503,
+        text: async () => 'Service Unavailable',
+      });
+      global.fetch = fetchMock as typeof fetch;
+
+      await expect(client.post('/api/items', { name: 'x' })).rejects.toThrow(
+        'API error 503 POST https://testops.example.com/api/items: Service Unavailable',
+      );
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('throws a readable timeout error when the request is aborted', async () => {
+      vi.useFakeTimers();
+      mockConfig.retryMax = 0;
+      fetchMock.mockImplementation((_url, init) => new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => {
+          reject(new DOMException('The operation was aborted', 'AbortError'));
+        });
+      }));
+      global.fetch = fetchMock as typeof fetch;
+
+      const requestExpectation = expect(client.get('/api/items')).rejects.toThrow(
+        'Request timed out after 100ms for GET https://testops.example.com/api/items',
+      );
+      await vi.advanceTimersByTimeAsync(101);
+
+      await requestExpectation;
+      vi.useRealTimers();
+    });
+
+    it('throws when a successful response contains invalid JSON', async () => {
+      fetchMock.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => {
+          throw new SyntaxError('Unexpected token <');
+        },
+      });
+      global.fetch = fetchMock as typeof fetch;
+
+      await expect(client.get('/api/items')).rejects.toThrow(
+        'Invalid JSON response for GET https://testops.example.com/api/items: Unexpected token <',
       );
     });
   });

@@ -1,15 +1,9 @@
 #!/bin/sh
 
-echo "Running lint and tests before commit..."
+echo "Running repository checks before commit..."
 
-npm run lint
+npm run check
 if [ $? -ne 0 ]; then
-  echo "Lint failed. Commit aborted."
-  exit 1
-fi
-
-npm test
-if [ $? -ne 0 ]; then
-  echo "Tests failed. Commit aborted."
+  echo "Checks failed. Commit aborted."
   exit 1
 fi

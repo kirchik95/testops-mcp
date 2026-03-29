@@ -4,6 +4,7 @@ vi.mock('../config.js', () => ({
   config: {
     testopsUrl: 'https://testops.example.com',
     testopsToken: 'my-api-token',
+    timeoutMs: 50,
   },
 }));
 
@@ -137,6 +138,41 @@ describe('AuthManager', () => {
       });
 
       await expect(auth.getAccessToken()).rejects.toThrow('Auth failed (401): Unauthorized');
+    });
+
+    it('throws when the auth response is not valid JSON', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => {
+          throw new SyntaxError('Unexpected token <');
+        },
+      });
+
+      await expect(auth.getAccessToken()).rejects.toThrow('Auth response was not valid JSON');
+    });
+
+    it('throws when access_token is missing', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ token_type: 'bearer', expires_in: 3600 }),
+      });
+
+      await expect(auth.getAccessToken()).rejects.toThrow('Auth response missing a valid access_token');
+    });
+
+    it('throws a timeout error when the auth request is aborted', async () => {
+      vi.useFakeTimers();
+      global.fetch = vi.fn().mockImplementation((_url, options) => new Promise((_resolve, reject) => {
+        options.signal.addEventListener('abort', () => {
+          reject(new DOMException('The operation was aborted', 'AbortError'));
+        });
+      }));
+
+      const tokenExpectation = expect(auth.getAccessToken()).rejects.toThrow('Auth request timed out after 50ms');
+      await vi.advanceTimersByTimeAsync(51);
+
+      await tokenExpectation;
+      vi.useRealTimers();
     });
   });
 });

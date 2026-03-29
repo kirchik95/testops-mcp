@@ -14,11 +14,7 @@ export class LaunchesApi {
   }
 
   async getStatistic(id: number): Promise<TestStatusCount[]> {
-    try {
-      return await this.http.get<TestStatusCount[]>(`/api/launch/${id}/statistic`);
-    } catch {
-      return [];
-    }
+    return this.http.get<TestStatusCount[]>(`/api/launch/${id}/statistic`);
   }
 
   async getTestResults(id: number, params?: { page?: number; size?: number }): Promise<PageResponse<TestResult>> {

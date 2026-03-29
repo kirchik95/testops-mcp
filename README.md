@@ -71,6 +71,9 @@ Or with `npx` (no global install required):
 | `TESTOPS_PROJECT_ID` | No | Default project ID (so you don't have to specify it in every request) |
 | `TESTOPS_PAGE_SIZE` | No | Pagination page size (server default if not set) |
 | `TESTOPS_READ_ONLY` | No | Set to `true` to disable all write operations |
+| `TESTOPS_TIMEOUT_MS` | No | Request timeout in milliseconds for auth and API calls (default: `30000`) |
+| `TESTOPS_RETRY_MAX` | No | Retry count for transient read-request failures (default: `2`) |
+| `TESTOPS_RETRY_BASE_MS` | No | Base backoff delay in milliseconds for transient read-request retries (default: `250`) |
 
 ## Available Tools
 
@@ -207,14 +210,27 @@ npm start
 
 ### Testing
 
-The project has 209 unit tests covering all layers (utils, config, client, API, tools).
+The project has 220 unit tests covering all layers (utils, config, client, API, tools).
 
 ```bash
 npm test           # run all tests once
 npm run test:watch # run in watch mode
+npm run check      # lint + unit tests + build + docs/guardrail checks
+npm run eval:smoke # run end-to-end smoke eval against a fake local TestOps backend
 ```
 
 A pre-commit hook automatically runs the test suite before every commit. If any test fails, the commit is blocked.
+
+### Repo Knowledge Base
+
+Agent-facing repository guidance lives in:
+
+- `AGENTS.md`
+- `docs/index.md`
+- `docs/architecture.md`
+- `docs/reliability.md`
+- `docs/security.md`
+- `docs/evals.md`
 
 ## License
 

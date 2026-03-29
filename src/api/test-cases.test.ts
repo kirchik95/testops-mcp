@@ -259,6 +259,22 @@ describe('TestCasesApi', () => {
 
       expect(http.post).toHaveBeenCalledWith('/api/testcase/70/cfv', newFields)
     })
+
+    it('preserves existing fields when updates omit customField.id', async () => {
+      const http = createMockHttp()
+      vi.mocked(http.get).mockResolvedValue([
+        { id: 100, name: 'High', customField: { id: 5, name: 'Priority' } },
+      ])
+      vi.mocked(http.post).mockResolvedValue(undefined)
+
+      const api = new TestCasesApi(http)
+      await api.updateCustomFields(70, 3, [{ id: 101, name: 'Loose value' }] as any)
+
+      expect(http.post).toHaveBeenCalledWith('/api/testcase/70/cfv', [
+        { id: 100, name: 'High', customField: { id: 5, name: 'Priority' } },
+        { id: 101, name: 'Loose value' },
+      ])
+    })
   })
 
   describe('getRelations', () => {

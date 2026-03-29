@@ -33,6 +33,13 @@ describe('config module', () => {
       const { validateConfig } = await loadConfig();
       expect(() => validateConfig()).not.toThrow();
     });
+
+    it('throws when TESTOPS_URL is not a valid http(s) URL', async () => {
+      vi.stubEnv('TESTOPS_URL', 'ftp://example.com');
+      vi.stubEnv('TESTOPS_TOKEN', 'my-token');
+      const { validateConfig } = await loadConfig();
+      expect(() => validateConfig()).toThrow('TESTOPS_URL must be a valid http(s) URL');
+    });
   });
 
   describe('resolveProjectId', () => {
@@ -85,9 +92,36 @@ describe('config module', () => {
       expect(config.readOnly).toBe(false);
     });
 
+    it('exposes default timeout and retry settings when env vars are absent', async () => {
+      const { config } = await loadConfig();
+      expect(config.timeoutMs).toBe(30_000);
+      expect(config.retryMax).toBe(2);
+      expect(config.retryBaseMs).toBe(250);
+    });
+
+    it('parses timeout and retry env vars', async () => {
+      vi.stubEnv('TESTOPS_TIMEOUT_MS', '1500');
+      vi.stubEnv('TESTOPS_RETRY_MAX', '4');
+      vi.stubEnv('TESTOPS_RETRY_BASE_MS', '75');
+      const { config } = await loadConfig();
+      expect(config.timeoutMs).toBe(1500);
+      expect(config.retryMax).toBe(4);
+      expect(config.retryBaseMs).toBe(75);
+    });
+
     it('leaves projectId undefined when env var is not set', async () => {
       const { config } = await loadConfig();
       expect(config.projectId).toBeUndefined();
+    });
+
+    it('throws on invalid numeric env vars during module load', async () => {
+      vi.stubEnv('TESTOPS_PAGE_SIZE', 'abc');
+      await expect(loadConfig()).rejects.toThrow('TESTOPS_PAGE_SIZE must be an integer >= 1');
+    });
+
+    it('throws on invalid boolean env vars during module load', async () => {
+      vi.stubEnv('TESTOPS_READ_ONLY', 'yes');
+      await expect(loadConfig()).rejects.toThrow('TESTOPS_READ_ONLY must be either "true" or "false"');
     });
   });
 });
