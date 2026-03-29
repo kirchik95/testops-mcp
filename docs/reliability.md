@@ -63,3 +63,10 @@ Use:
 - `npm run check` for unit + structural validation
 - `npm run eval:smoke` for end-to-end startup/auth/tool wiring checks against the fake backend
 - `npm run eval:matrix` for broad tool-group and logging verification against the fake backend
+
+## Fake Backend Contract Rules
+
+- the fake backend is expected to reject malformed request payloads with readable `400` errors
+- missing entities should return readable `404` errors
+- the route registry in `scripts/eval-support/contracts.mjs` is the contract source for fake-backend coverage
+- `npm run contract:drift` must stay green whenever `src/api/*` changes

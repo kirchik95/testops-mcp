@@ -10,6 +10,8 @@ The local eval harness validates the built MCP server end-to-end against a fake 
 - `npm run eval:smoke`
 - `npm run eval:matrix`
 
+`npm run check` also includes `npm run contract:drift`, which verifies that the route contract registry used by the fake backend still matches `src/api/*`.
+
 ## CI Execution
 
 GitHub Actions mirrors the local contract:
@@ -36,6 +38,7 @@ CI should not introduce separate validation logic. The workflow must call the sa
 
 - representative happy-path coverage for all tool groups
 - representative write flows for test cases, test plans, test results, and defects
+- negative request validation and missing-entity scenarios for representative write/read paths
 - analytics and reference-data reads
 - read-only mode removing write tools across all write-capable groups
 - structured stderr logging scenarios for `error`, `info`, and `debug`

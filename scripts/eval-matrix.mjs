@@ -192,11 +192,70 @@ async function runLoggingMatrix(baseUrl) {
   }
 }
 
+async function runNegativeMatrix(baseUrl) {
+  await withClient({
+    TESTOPS_URL: baseUrl,
+    TESTOPS_TOKEN: 'fake-api-token',
+    TESTOPS_PROJECT_ID: 1,
+  }, async (client) => {
+    const missingCase = await client.callTool({ name: 'get-test-case', arguments: { id: 99999 } });
+    assert(missingCase.isError === true, 'missing test case must surface as tool error');
+    assert(extractText(missingCase).includes('404'), 'missing test case must include 404');
+
+    const invalidCaseCreate = await client.callTool({
+      name: 'create-test-case',
+      arguments: { projectId: 1, name: '' },
+    });
+    assert(invalidCaseCreate.isError === true, 'invalid test case create must fail');
+    assert(extractText(invalidCaseCreate).includes('400'), 'invalid test case create must include 400');
+
+    const invalidScenario = await client.callTool({
+      name: 'update-test-case-scenario',
+      arguments: { id: 11, steps: [{ keyword: 'Given', name: '' }] },
+    });
+    assert(invalidScenario.isError === true, 'invalid scenario update must fail');
+    assert(extractText(invalidScenario).includes('400'), 'invalid scenario update must include 400');
+
+    const invalidCustomFields = await client.callTool({
+      name: 'set-test-case-custom-fields',
+      arguments: {
+        id: 11,
+        projectId: 1,
+        fields: [{ id: 12, name: 'Broken field', customField: { id: 0 } }],
+      },
+    });
+    assert(invalidCustomFields.isError === true, 'invalid custom field update must fail');
+    assert(extractText(invalidCustomFields).includes('400'), 'invalid custom field update must include 400');
+
+    const invalidPlanCreate = await client.callTool({
+      name: 'create-test-plan',
+      arguments: { projectId: 1, name: '' },
+    });
+    assert(invalidPlanCreate.isError === true, 'invalid test plan create must fail');
+    assert(extractText(invalidPlanCreate).includes('400'), 'invalid test plan create must include 400');
+
+    const invalidResultUpdate = await client.callTool({
+      name: 'update-test-result',
+      arguments: { id: 41, status: 'flaky' },
+    });
+    assert(invalidResultUpdate.isError === true, 'invalid test result update must fail');
+    assert(extractText(invalidResultUpdate).includes('400'), 'invalid test result update must include 400');
+
+    const invalidDefectCreate = await client.callTool({
+      name: 'create-defect',
+      arguments: { projectId: 1, name: '' },
+    });
+    assert(invalidDefectCreate.isError === true, 'invalid defect create must fail');
+    assert(extractText(invalidDefectCreate).includes('400'), 'invalid defect create must include 400');
+  });
+}
+
 async function main() {
   const happyServer = await startFakeTestOpsServer();
 
   try {
     await runHappyPathMatrix(happyServer.baseUrl);
+    await runNegativeMatrix(happyServer.baseUrl);
     await runReadOnlyMatrix(happyServer.baseUrl);
     await runLoggingMatrix(happyServer.baseUrl);
   } finally {

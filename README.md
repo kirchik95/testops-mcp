@@ -218,6 +218,7 @@ The project has 220 unit tests covering all layers (utils, config, client, API, 
 npm test           # run all tests once
 npm run test:watch # run in watch mode
 npm run check      # lint + unit tests + build + docs/guardrail checks
+npm run contract:drift # ensure fake backend route contracts match src/api/*
 npm run eval:smoke # run end-to-end smoke eval against a fake local TestOps backend
 npm run eval:matrix # run full local eval matrix across all tool groups and logging modes
 ```
