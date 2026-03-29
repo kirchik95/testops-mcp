@@ -17,7 +17,7 @@ An [MCP](https://modelcontextprotocol.io/) server that connects AI agents (Claud
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - Access to a [TestOps](https://qatools.ru/) instance
 - TestOps API token
 
@@ -228,9 +228,9 @@ A pre-commit hook automatically runs the test suite before every commit. If any 
 
 GitHub Actions runs on every push to `main` and on every pull request.
 
-- `check` runs on Node 18 and Node 22
-- `eval:smoke` runs on Node 22
-- `eval:matrix` runs on Node 22
+- `check` runs on Node 20 and Node 22
+- `eval:smoke` runs on Node 20
+- `eval:matrix` runs on Node 20
 
 The workflow file lives at `.github/workflows/ci.yml`.
 

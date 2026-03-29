@@ -14,9 +14,9 @@ The local eval harness validates the built MCP server end-to-end against a fake 
 
 GitHub Actions mirrors the local contract:
 
-- `check` runs on Node 18 and Node 22
-- `eval:smoke` runs on Node 22
-- `eval:matrix` runs on Node 22
+- `check` runs on Node 20 and Node 22
+- `eval:smoke` runs on Node 20
+- `eval:matrix` runs on Node 20
 
 CI should not introduce separate validation logic. The workflow must call the same repo scripts that developers and agents use locally.
 

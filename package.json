@@ -10,6 +10,9 @@
   "files": [
     "build"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "rm -rf build && tsc -p tsconfig.build.json",
     "start": "node build/index.js",
