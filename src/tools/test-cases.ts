@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { TestCasesApi } from '../api/test-cases.js';
 import {
   formatTestCases, formatTestCase, formatTestCaseOverview, formatScenario,
+  formatCombinedSteps,
   formatIssues, formatMembers, formatCustomFields, formatRelations,
   formatRequirements, formatTestKeys,
 } from '../utils/formatting.js';
@@ -174,14 +175,17 @@ export function registerTestCaseTools(server: McpServer, api: TestCasesApi, read
   server.registerTool(
     'get-test-case-scenario',
     {
-      description: 'Get the scenario (steps) of a test case.',
+      description: 'Get the scenario (steps) of a test case. Reads both Gherkin scenarios (Given/When/Then) and manual steps added through the UI.',
       inputSchema: z.object({
         id: z.number().describe('Test case ID'),
       }),
     },
     withErrorHandler(async (params) => {
-      const result = await api.getScenario(params.id);
-      return { content: [{ type: 'text' as const, text: formatScenario(result) }] };
+      const [scenario, stepTree] = await Promise.all([
+        api.getScenario(params.id),
+        api.getSteps(params.id),
+      ]);
+      return { content: [{ type: 'text' as const, text: formatCombinedSteps(scenario, stepTree) }] };
     })
   );
 

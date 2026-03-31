@@ -40,6 +40,7 @@ function createMockApi() {
     update: vi.fn(),
     delete: vi.fn(),
     getScenario: vi.fn(),
+    getSteps: vi.fn(),
     updateScenario: vi.fn(),
     getIssues: vi.fn(),
     setIssues: vi.fn(),
@@ -214,6 +215,15 @@ describe('registerTestCaseTools', () => {
   })
 
   describe('get-test-case-scenario handler', () => {
+    const emptyStepTree = {
+      root: { children: [] },
+      scenarioSteps: {},
+      attachments: {},
+      sharedSteps: {},
+      sharedStepScenarioSteps: {},
+      sharedStepAttachments: {},
+    }
+
     it('returns formatted scenario steps', async () => {
       const server = createMockServer()
       const api = createMockApi()
@@ -226,15 +236,50 @@ describe('registerTestCaseTools', () => {
           { name: 'Click submit', keyword: 'Then', expectedResult: 'User is logged in' },
         ],
       })
+      vi.mocked(api.getSteps).mockResolvedValue(emptyStepTree)
 
       const handler = (server as any)._tools.get('get-test-case-scenario')!.handler
       const result = await handler({ id: 1 }, {})
 
       expect(api.getScenario).toHaveBeenCalledWith(1)
+      expect(api.getSteps).toHaveBeenCalledWith(1)
       expect(result.content[0].text).toContain('Open login page')
       expect(result.content[0].text).toContain('Enter credentials')
       expect(result.content[0].text).toContain('Click submit')
       expect(result.content[0].text).toContain('User is logged in')
+    })
+
+    it('returns manual steps when scenario is empty', async () => {
+      const server = createMockServer()
+      const api = createMockApi()
+      registerTestCaseTools(server, api)
+
+      vi.mocked(api.getScenario).mockResolvedValue({ steps: [] })
+      vi.mocked(api.getSteps).mockResolvedValue({
+        ...emptyStepTree,
+        root: { children: [100] },
+        scenarioSteps: { '100': { id: 100, body: 'Click the login button' } },
+      })
+
+      const handler = (server as any)._tools.get('get-test-case-scenario')!.handler
+      const result = await handler({ id: 2 }, {})
+
+      expect(result.content[0].text).toContain('Manual steps:')
+      expect(result.content[0].text).toContain('Click the login button')
+    })
+
+    it('returns no steps when both sources are empty', async () => {
+      const server = createMockServer()
+      const api = createMockApi()
+      registerTestCaseTools(server, api)
+
+      vi.mocked(api.getScenario).mockResolvedValue({ steps: [] })
+      vi.mocked(api.getSteps).mockResolvedValue(emptyStepTree)
+
+      const handler = (server as any)._tools.get('get-test-case-scenario')!.handler
+      const result = await handler({ id: 3 }, {})
+
+      expect(result.content[0].text).toBe('No steps defined.')
     })
 
     it('returns isError when API throws', async () => {

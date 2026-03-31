@@ -3,7 +3,7 @@ import {
   formatTestCases, formatTestCase, formatTestCaseOverview,
   formatIssues, formatMembers, formatCustomFields, formatRelations,
   formatRequirements, formatTestKeys,
-  formatScenario,
+  formatScenario, formatManualSteps, formatCombinedSteps,
   formatTestPlans, formatTestPlan,
   formatLaunches, formatLaunch,
   formatTestResults, formatTestResult,
@@ -15,7 +15,7 @@ import {
 import type {
   Project, TestCase, TestCaseOverview, TestPlan, Launch, TestResult, Defect,
   AutomationTrendPoint, StatusDistribution, SuccessRatePoint,
-  TestCaseScenario, CustomFieldValueWithCf,
+  TestCaseScenario, TestCaseStepTree, CustomFieldValueWithCf,
   TestLayer, Workflow,
 } from '../types/api-types.js';
 
@@ -288,6 +288,95 @@ describe('formatScenario', () => {
     const out = formatScenario(scenario);
     expect(out).toContain('Parent');
     expect(out).toContain('Child');
+  });
+});
+
+// ── Manual Steps ─────────────────────────────────────────
+
+const emptyStepTree: TestCaseStepTree = {
+  root: { children: [] },
+  scenarioSteps: {},
+  attachments: {},
+  sharedSteps: {},
+  sharedStepScenarioSteps: {},
+  sharedStepAttachments: {},
+};
+
+describe('formatManualSteps', () => {
+  it('returns fallback for empty children', () => {
+    expect(formatManualSteps(emptyStepTree)).toBe('No manual steps defined.');
+  });
+
+  it('formats manual steps in order', () => {
+    const tree: TestCaseStepTree = {
+      ...emptyStepTree,
+      root: { children: [10, 20] },
+      scenarioSteps: {
+        '10': { id: 10, body: 'Open the page' },
+        '20': { id: 20, body: 'Click submit' },
+      },
+    };
+    const out = formatManualSteps(tree);
+    expect(out).toContain('Manual steps:');
+    expect(out).toContain('1. Open the page');
+    expect(out).toContain('2. Click submit');
+  });
+
+  it('skips missing step IDs', () => {
+    const tree: TestCaseStepTree = {
+      ...emptyStepTree,
+      root: { children: [10, 99] },
+      scenarioSteps: {
+        '10': { id: 10, body: 'Only this step' },
+      },
+    };
+    const out = formatManualSteps(tree);
+    expect(out).toContain('1. Only this step');
+    expect(out).not.toContain('2.');
+  });
+});
+
+describe('formatCombinedSteps', () => {
+  it('returns fallback when both are empty', () => {
+    expect(formatCombinedSteps({ steps: [] }, emptyStepTree)).toBe('No steps defined.');
+  });
+
+  it('returns only scenario when manual is empty', () => {
+    const scenario: TestCaseScenario = {
+      steps: [{ name: 'Step A', keyword: 'Given' }],
+    };
+    const out = formatCombinedSteps(scenario, emptyStepTree);
+    expect(out).toContain('Scenario steps:');
+    expect(out).toContain('[Given] Step A');
+    expect(out).not.toContain('Manual steps:');
+  });
+
+  it('returns only manual when scenario is empty', () => {
+    const tree: TestCaseStepTree = {
+      ...emptyStepTree,
+      root: { children: [1] },
+      scenarioSteps: { '1': { id: 1, body: 'Manual action' } },
+    };
+    const out = formatCombinedSteps({ steps: [] }, tree);
+    expect(out).toContain('Manual steps:');
+    expect(out).toContain('1. Manual action');
+    expect(out).not.toContain('Scenario steps:');
+  });
+
+  it('returns both sections when both have data', () => {
+    const scenario: TestCaseScenario = {
+      steps: [{ name: 'Gherkin step', keyword: 'When' }],
+    };
+    const tree: TestCaseStepTree = {
+      ...emptyStepTree,
+      root: { children: [5] },
+      scenarioSteps: { '5': { id: 5, body: 'UI step' } },
+    };
+    const out = formatCombinedSteps(scenario, tree);
+    expect(out).toContain('Scenario steps:');
+    expect(out).toContain('[When] Gherkin step');
+    expect(out).toContain('Manual steps:');
+    expect(out).toContain('1. UI step');
   });
 });
 

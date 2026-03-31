@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-03-31
+
+### Added
+
+- **`get-test-case-scenario` now reads manual UI steps** — the tool fetches both Gherkin scenarios (`GET /api/testcase/{id}/scenario`) and manual step trees (`GET /api/testcase/{id}/step`) in parallel, combining them into a single output. Previously, manual steps added through the TestOps UI were invisible to MCP clients.
+- New API method `TestCasesApi.getSteps()` for the `/api/testcase/{id}/step` endpoint
+- New types `TestCaseStepTree` and `TestCaseManualStep` for the step tree response
+- New formatters `formatManualSteps` and `formatCombinedSteps`
+- Eval matrix coverage for manual steps (fixture test case id 12)
+- Fake backend support for `GET /api/testcase/:id/step`
+
 ## [1.5.3] - 2026-03-26
 
 ### Fixed

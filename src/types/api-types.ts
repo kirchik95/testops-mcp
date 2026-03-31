@@ -102,6 +102,25 @@ export interface TestCaseStep {
   steps?: TestCaseStep[]; // nested steps
 }
 
+export interface TestCaseStepTree {
+  root: { children: number[] };
+  scenarioSteps: Record<string, TestCaseManualStep>;
+  attachments: Record<string, unknown>;
+  sharedSteps: Record<string, unknown>;
+  sharedStepScenarioSteps: Record<string, unknown>;
+  sharedStepAttachments: Record<string, unknown>;
+}
+
+export interface TestCaseManualStep {
+  id: number;
+  body: string;
+  bodyJson?: unknown;
+  createdDate?: number;
+  lastModifiedDate?: number;
+  createdBy?: string;
+  lastModifiedBy?: string;
+}
+
 // Test Plan
 export interface TestPlan {
   id: number;

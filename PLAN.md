@@ -76,7 +76,7 @@ JWT валиден 1 час. Обновляем проактивно через 
 | `create-test-case` | POST /api/testcase | Создание тест-кейса |
 | `update-test-case` | PATCH /api/testcase/{id} | Обновление тест-кейса |
 | `delete-test-case` | DELETE /api/testcase/{id} | Удаление тест-кейса |
-| `get-test-case-scenario` | GET /api/testcase/{id}/scenario | Сценарий/шаги |
+| `get-test-case-scenario` | GET /api/testcase/{id}/scenario + GET /api/testcase/{id}/step | Сценарий/шаги (Gherkin + ручные) |
 | `update-test-case-scenario` | POST /api/testcase/{id}/scenario | Обновить сценарий |
 
 ### Приоритет 2 — Тест-планы и запуски

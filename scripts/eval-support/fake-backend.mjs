@@ -309,6 +309,7 @@ function handleTestCases(request, response, url, state, options, body) {
     state.nextIds.testCase += 1;
     state.testCases.push(created);
     state.testCaseScenarios[created.id] = { steps: [] };
+    state.testCaseStepTrees[created.id] = { root: { children: [] }, scenarioSteps: {}, attachments: {}, sharedSteps: {}, sharedStepScenarioSteps: {}, sharedStepAttachments: {} };
     state.testCaseMembers[created.id] = [];
     state.counters.createdTestCases.push(created);
     jsonResponse(response, 200, created);
@@ -367,6 +368,15 @@ function handleTestCases(request, response, url, state, options, body) {
     if (!payload) return true;
     state.testCaseScenarios[id] = payload;
     jsonResponse(response, 200, state.testCaseScenarios[id]);
+    return true;
+  }
+
+  if (request.method === 'GET' && /^\/api\/testcase\/\d+\/step$/.test(url.pathname)) {
+    const id = parseNestedId(url.pathname, '/api/testcase/', '/step');
+    const testCase = findById(state.testCases, id);
+    if (!ensureEntity(testCase, 'Test case', id, response)) return true;
+    const defaultTree = { root: { children: [] }, scenarioSteps: {}, attachments: {}, sharedSteps: {}, sharedStepScenarioSteps: {}, sharedStepAttachments: {} };
+    jsonResponse(response, 200, state.testCaseStepTrees[id] ?? defaultTree);
     return true;
   }
 

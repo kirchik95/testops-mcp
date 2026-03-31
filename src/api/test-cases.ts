@@ -1,7 +1,7 @@
 import { HttpClient } from '../client/http-client.js';
 import {
   TestCase, TestCaseOverview, CreateTestCaseRequest, UpdateTestCaseRequest,
-  TestCaseScenario, IssueDto, MemberDto, CustomFieldValueWithCf,
+  TestCaseScenario, TestCaseStepTree, IssueDto, MemberDto, CustomFieldValueWithCf,
   TestCaseRelationDto, RequirementDto, TestKeyDto, ExternalLink,
 } from '../types/api-types.js';
 import { PageResponse } from '../types/common.js';
@@ -39,6 +39,10 @@ export class TestCasesApi {
 
   async getScenario(id: number): Promise<TestCaseScenario> {
     return this.http.get<TestCaseScenario>(`/api/testcase/${id}/scenario`);
+  }
+
+  async getSteps(id: number): Promise<TestCaseStepTree> {
+    return this.http.get<TestCaseStepTree>(`/api/testcase/${id}/step`);
   }
 
   async updateScenario(id: number, scenario: TestCaseScenario): Promise<TestCaseScenario> {

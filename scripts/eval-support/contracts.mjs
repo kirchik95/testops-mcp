@@ -10,6 +10,7 @@ export const apiContracts = [
   { group: 'test-cases', method: 'DELETE', path: '/api/testcase/:id' },
   { group: 'test-cases', method: 'GET', path: '/api/testcase/:id/scenario' },
   { group: 'test-cases', method: 'POST', path: '/api/testcase/:id/scenario' },
+  { group: 'test-cases', method: 'GET', path: '/api/testcase/:id/step' },
   { group: 'test-cases', method: 'GET', path: '/api/testcase/:id/issue' },
   { group: 'test-cases', method: 'POST', path: '/api/testcase/:id/issue' },
   { group: 'test-cases', method: 'GET', path: '/api/testcase/:id/members' },

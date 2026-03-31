@@ -137,6 +137,20 @@ describe('TestCasesApi', () => {
     })
   })
 
+  describe('getSteps', () => {
+    it('calls GET /api/testcase/:id/step', async () => {
+      const http = createMockHttp()
+      const expected = { root: { children: [1] }, scenarioSteps: { 1: { id: 1, body: 'Click button' } } }
+      vi.mocked(http.get).mockResolvedValue(expected)
+
+      const api = new TestCasesApi(http)
+      const result = await api.getSteps(15)
+
+      expect(http.get).toHaveBeenCalledWith('/api/testcase/15/step')
+      expect(result).toBe(expected)
+    })
+  })
+
   describe('updateScenario', () => {
     it('calls POST /api/testcase/:id/scenario with body', async () => {
       const http = createMockHttp()

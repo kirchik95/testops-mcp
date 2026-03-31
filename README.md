@@ -95,7 +95,7 @@ Or with `npx` (no global install required):
 | `create-test-case` | Create a test case (with tags, links, members) |
 | `update-test-case` | Update a test case (with tags, links, members, duration) |
 | `delete-test-case` | Delete a test case |
-| `get-test-case-scenario` | Get test case scenario (steps) |
+| `get-test-case-scenario` | Get test case steps (Gherkin scenarios + manual UI steps) |
 | `update-test-case-scenario` | Update test case scenario |
 
 ### Test Case Sub-Resources

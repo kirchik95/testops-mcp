@@ -22,6 +22,20 @@ export function createEvalFixtures() {
         createdBy: 'robot',
         lastModifiedBy: 'robot',
       },
+      {
+        id: 12,
+        name: 'Manual Steps Case',
+        projectId: 1,
+        status: { id: 101, name: 'Active' },
+        testLayer: { id: 202, name: 'UI' },
+        automated: false,
+        tags: [{ name: 'manual' }],
+        description: 'Case with manual steps',
+        createdDate: 1711879200000,
+        lastModifiedDate: 1711879200000,
+        createdBy: 'robot',
+        lastModifiedBy: 'robot',
+      },
     ],
     testCaseScenarios: {
       11: {
@@ -30,6 +44,21 @@ export function createEvalFixtures() {
           { keyword: 'When', name: 'API request is sent' },
           { keyword: 'Then', name: 'HTTP 200 is returned', expectedResult: 'Status code is 200' },
         ],
+      },
+      12: { steps: [] },
+    },
+    testCaseStepTrees: {
+      11: { root: { children: [] }, scenarioSteps: {}, attachments: {}, sharedSteps: {}, sharedStepScenarioSteps: {}, sharedStepAttachments: {} },
+      12: {
+        root: { children: [9001, 9002] },
+        scenarioSteps: {
+          9001: { id: 9001, body: 'Open the login page', createdBy: 'robot', createdDate: 1711879200000, lastModifiedBy: 'robot', lastModifiedDate: 1711879200000 },
+          9002: { id: 9002, body: 'Enter valid credentials and submit', createdBy: 'robot', createdDate: 1711879200000, lastModifiedBy: 'robot', lastModifiedDate: 1711879200000 },
+        },
+        attachments: {},
+        sharedSteps: {},
+        sharedStepScenarioSteps: {},
+        sharedStepAttachments: {},
       },
     },
     testCaseMembers: {

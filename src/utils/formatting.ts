@@ -1,7 +1,7 @@
 import {
   Project, TestCase, TestCaseOverview, TestPlan, Launch, TestResult, Defect,
   AutomationTrendPoint, StatusDistribution, SuccessRatePoint,
-  TestCaseScenario, TestCaseStep, TestStatusCount,
+  TestCaseScenario, TestCaseStep, TestCaseStepTree, TestStatusCount,
   IssueDto, MemberDto, CustomFieldValueWithCf,
   TestCaseRelationDto, RequirementDto, TestKeyDto,
   TestLayer, Workflow,
@@ -202,6 +202,10 @@ export function formatTestKeys(testKeys: TestKeyDto[]): string {
 
 export function formatScenario(scenario: TestCaseScenario): string {
   if (!scenario.steps || scenario.steps.length === 0) return 'No steps defined.';
+  return renderScenarioSteps(scenario);
+}
+
+function renderScenarioSteps(scenario: TestCaseScenario): string {
   const lines = ['Scenario steps:'];
   function renderSteps(steps: TestCaseStep[], indent = 1) {
     for (let i = 0; i < steps.length; i++) {
@@ -215,6 +219,30 @@ export function formatScenario(scenario: TestCaseScenario): string {
   }
   renderSteps(scenario.steps);
   return lines.join('\n');
+}
+
+export function formatManualSteps(stepTree: TestCaseStepTree): string {
+  const ids = stepTree.root?.children ?? [];
+  if (ids.length === 0) return 'No manual steps defined.';
+  const lines = ['Manual steps:'];
+  for (let i = 0; i < ids.length; i++) {
+    const step = stepTree.scenarioSteps[String(ids[i])];
+    if (!step) continue;
+    lines.push(`  ${i + 1}. ${step.body}`);
+  }
+  return lines.join('\n');
+}
+
+export function formatCombinedSteps(scenario: TestCaseScenario, stepTree: TestCaseStepTree): string {
+  const hasScenario = scenario.steps && scenario.steps.length > 0;
+  const hasManual = (stepTree.root?.children ?? []).length > 0;
+
+  if (!hasScenario && !hasManual) return 'No steps defined.';
+
+  const sections: string[] = [];
+  if (hasScenario) sections.push(renderScenarioSteps(scenario));
+  if (hasManual) sections.push(formatManualSteps(stepTree));
+  return sections.join('\n\n');
 }
 
 export function formatTestPlans(data: PageResponse<TestPlan>): string {

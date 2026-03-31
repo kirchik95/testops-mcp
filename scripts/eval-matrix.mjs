@@ -37,6 +37,13 @@ async function runHappyPathMatrix(baseUrl) {
     });
     assert(extractText(scenarioResult).includes('Updated setup'), 'update-test-case-scenario must return the updated steps');
 
+    const manualStepsResult = await client.callTool({
+      name: 'get-test-case-scenario',
+      arguments: { id: 12 },
+    });
+    assert(extractText(manualStepsResult).includes('Manual steps:'), 'get-test-case-scenario must return manual steps header');
+    assert(extractText(manualStepsResult).includes('Open the login page'), 'get-test-case-scenario must return manual step body');
+
     const createPlanResult = await client.callTool({
       name: 'create-test-plan',
       arguments: { projectId: 1, name: 'Matrix Plan', description: 'Created in eval matrix' },
